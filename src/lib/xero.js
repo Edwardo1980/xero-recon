@@ -55,7 +55,8 @@ export async function xeroGet(path, retried = false) {
 
   // Respect Retry-After on 429 (one retry with the header-specified delay)
   if (resp.status === 429) {
-    const delay = Math.min(parseInt(resp.headers.get('Retry-After') ?? '10', 10) * 1000, 30_000);
+    const raw   = parseInt(resp.headers.get('Retry-After') ?? '10', 10);
+    const delay = Math.min(Number.isFinite(raw) && raw > 0 ? raw * 1000 : 10_000, 30_000);
     await new Promise(r => setTimeout(r, delay));
     resp = await doFetch();
   }

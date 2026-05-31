@@ -34,9 +34,15 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    // 'hidden': maps generated for error tracking but not referenced in bundles
+    sourcemap: 'hidden',
   },
   server: {
     port: 5173,
+    headers: {
+      'X-Frame-Options': 'DENY',
+      'X-Content-Type-Options': 'nosniff',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+    },
   },
 });

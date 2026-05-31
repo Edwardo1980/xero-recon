@@ -3,7 +3,7 @@ import { useAuthStore } from './store.js';
 
 // ── Crypto helpers ────────────────────────────────────────────
 function b64url(buf) {
-  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+  return btoa(String.fromCharCode.apply(null, new Uint8Array(buf)))
     .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 }
 

@@ -31,10 +31,8 @@ function OAuthInterceptor({ children }) {
     if (code && state) {
       window.history.replaceState({}, '', window.location.pathname);
       if (!clientId) { navigate('/setup'); return; }
-      // Store params in sessionStorage and redirect to callback route
-      sessionStorage.setItem('xero_oauth_code',  code);
-      sessionStorage.setItem('xero_oauth_state', state);
-      navigate('/callback');
+      // Pass code+state via Router in-memory state (never written to storage)
+      navigate('/callback', { state: { code, state } });
     }
   // run once on mount
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,14 +55,10 @@ function RequireCreds({ children }) {
   return children;
 }
 
-// CallbackScreen wrapper that reads code/state from sessionStorage
+// CallbackScreen wrapper that reads code/state from Router in-memory state
 function CallbackWrapper() {
-  const code  = sessionStorage.getItem('xero_oauth_code')  ?? '';
-  const state = sessionStorage.getItem('xero_oauth_state') ?? '';
-  useEffect(() => {
-    sessionStorage.removeItem('xero_oauth_code');
-    sessionStorage.removeItem('xero_oauth_state');
-  }, []);
+  const location = useLocation();
+  const { code = '', state = '' } = location.state ?? {};
   return <CallbackScreen code={code} state={state} />;
 }
 

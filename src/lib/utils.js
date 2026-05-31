@@ -33,5 +33,6 @@ export function translateError(msg) {
   if (msg.includes('timed out')) return 'The request timed out. Please check your connection and try again.';
   if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) return 'Network error — please check your internet connection and try again.';
   if (msg.includes('Token exchange failed')) return 'Failed to complete the Xero login. Make sure you copied the full redirect URL and try again.';
-  return msg;
+  console.error('[xero-recon]', msg);
+  return 'An unexpected error occurred. Please try again or reload the page.';
 }
