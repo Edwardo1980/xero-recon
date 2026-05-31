@@ -72,9 +72,10 @@ export default function App() {
   return (
     <HashRouter>
       <OAuthInterceptor>
+        <a href="#main-content" className="skip-link">Skip to main content</a>
         <ScrollToTop />
         <AlertBanners />
-        <div className="wrap" role="main">
+        <div id="main-content" className="wrap" role="main">
           <div id="ariaAnnounce" className="sr-only" aria-live="polite" aria-atomic="true" />
           <Header />
 
