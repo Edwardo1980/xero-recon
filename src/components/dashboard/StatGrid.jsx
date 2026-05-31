@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { fmt } from '../../lib/utils.js';
 
+const REDUCED_MOTION_MQ = window.matchMedia('(prefers-reduced-motion: reduce)');
+
 function AnimatedCount({ value }) {
   const ref    = useRef(null);
   const prevRef = useRef(0);
@@ -11,8 +13,7 @@ function AnimatedCount({ value }) {
     prevRef.current = to;
     if (from === to || !ref.current) return;
 
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reducedMotion) { ref.current.textContent = to; return; }
+    if (REDUCED_MOTION_MQ.matches) { ref.current.textContent = to; return; }
 
     const dur    = 550;
     let start    = null;

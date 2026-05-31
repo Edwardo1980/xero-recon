@@ -39,9 +39,8 @@ export default function DashboardScreen() {
   const navigate      = useNavigate();
   const toast         = useToast();
   const forceRefresh  = useForceRefresh();
-  const allConnections = useAuthStore(s => s.allConnections);
-  const { tenantName, clearTokens } = useAuthStore(useShallow(s => ({
-    tenantName: s.tenantName, clearTokens: s.clearTokens,
+  const { tenantName, clearTokens, allConnections } = useAuthStore(useShallow(s => ({
+    tenantName: s.tenantName, clearTokens: s.clearTokens, allConnections: s.allConnections,
   })));
 
   const { data, isLoading, isError, error, dataUpdatedAt } = useReconciliation();
@@ -91,12 +90,11 @@ export default function DashboardScreen() {
     return () => clearInterval(id);
   }, [dataUpdatedAt]);
 
-  const lastUpdated = dataUpdatedAt
-    ? (() => {
-        const secs = Math.floor((Date.now() - dataUpdatedAt) / 1000);
-        return secs < 60 ? `Updated ${secs}s ago` : `Updated ${Math.floor(secs / 60)}m ago`;
-      })()
-    : '—';
+  let lastUpdated = '—';
+  if (dataUpdatedAt) {
+    const secs = Math.floor((Date.now() - dataUpdatedAt) / 1000);
+    lastUpdated = secs < 60 ? `Updated ${secs}s ago` : `Updated ${Math.floor(secs / 60)}m ago`;
+  }
 
   return (
     <div className="screen active">
