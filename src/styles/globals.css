@@ -335,7 +335,7 @@
     font-size: 11px;
     padding: 8px 14px;
   }
-  .btn-ghost:hover:not(:disabled) { color: var(--warn); border-color: rgba(255,112,67,0.3); }
+  .btn-ghost:hover:not(:disabled) { color: var(--text); border-color: var(--border2); background: var(--surface2); }
 
   .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   .btn:disabled {

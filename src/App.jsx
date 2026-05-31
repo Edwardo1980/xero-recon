@@ -13,9 +13,21 @@ const CallbackScreen  = lazy(() => import('./screens/CallbackScreen.jsx'));
 const OrgPickerScreen = lazy(() => import('./screens/OrgPickerScreen.jsx'));
 const DashboardScreen = lazy(() => import('./screens/DashboardScreen.jsx'));
 
+const ROUTE_LABELS = {
+  '/setup': 'Setup', '/connect': 'Connect to Xero', '/callback': 'Complete Connection',
+  '/org-select': 'Select Organisation', '/dashboard': 'Dashboard',
+};
+
 function ScrollToTop() {
   const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    const label = ROUTE_LABELS[pathname];
+    if (label) {
+      const el = document.getElementById('ariaAnnounce');
+      if (el) { el.textContent = ''; requestAnimationFrame(() => { el.textContent = `Navigated to ${label}`; }); }
+    }
+  }, [pathname]);
   return null;
 }
 
