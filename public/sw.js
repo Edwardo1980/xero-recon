@@ -38,23 +38,17 @@ self.addEventListener('fetch', event => {
   // Always go to network for Xero API and auth endpoints
   if (url.hostname.endsWith('xero.com')) return;
 
-  // Cache-first for same-origin shell assets
+  // Cache-first for shell assets only (explicit allowlist, not all same-origin responses)
   if (url.origin === self.location.origin) {
     event.respondWith(
       caches.match(event.request).then(cached => {
         if (cached) return cached;
-        return fetch(event.request).then(response => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-          }
-          return response;
-        }).catch(() => {
-          // Offline fallback: return the cached index.html for navigation requests
-          if (event.request.mode === 'navigate') {
-            return caches.match('./index.html');
-          }
-        });
+        // For navigation requests, return cached index.html when offline
+        if (event.request.mode === 'navigate') {
+          return fetch(event.request).catch(() => caches.match('./index.html'));
+        }
+        // For other requests, network-only (do not cache dynamically)
+        return fetch(event.request);
       })
     );
   }

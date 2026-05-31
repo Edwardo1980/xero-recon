@@ -86,14 +86,19 @@ export default function SetupScreen() {
           />
         </div>
         <div className="field">
-          <label htmlFor="inputClientSecret">Client Secret</label>
+          <label htmlFor="inputClientSecret">
+            Client Secret <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 11 }}>(optional)</span>
+          </label>
           <input
             id="inputClientSecret" type="password" value={clientSecret}
             onChange={e => setClientSecret(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && onSave()}
-            placeholder="Paste your Xero Client Secret…"
+            placeholder="Leave blank for PKCE-only (recommended)…"
             autoComplete="off"
           />
+          <p style={{ margin: '4px 0 0', fontSize: 11, color: 'var(--text-muted)' }}>
+            PKCE works without a secret. If you enter one, it will be stored in your browser's local storage.
+          </p>
         </div>
 
         {error && <Notice id="setup-error" type="warn">{error}</Notice>}
