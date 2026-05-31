@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
 import { useAuthStore } from '../lib/store.js';
 import { useReconciliation, useForceRefresh } from '../hooks/useReconciliation.js';
 import { useToast } from '../contexts/ToastContext.jsx';
@@ -40,9 +41,9 @@ export default function DashboardScreen() {
   const toast         = useToast();
   const forceRefresh  = useForceRefresh();
   const allConnections = useAuthStore(s => s.allConnections);
-  const { tenantId, tenantName, setTenant, clearTokens } = useAuthStore(s => ({
+  const { tenantId, tenantName, setTenant, clearTokens } = useAuthStore(useShallow(s => ({
     tenantId: s.tenantId, tenantName: s.tenantName, setTenant: s.setTenant, clearTokens: s.clearTokens,
-  }));
+  })));
 
   const { data, isLoading, isError, error, dataUpdatedAt } = useReconciliation();
   usePageTitle(data?.tenantName ?? tenantName ?? 'Dashboard');

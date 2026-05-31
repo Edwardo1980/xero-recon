@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
 import { useAuthStore } from '../lib/store.js';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { usePageTitle } from '../hooks/usePageTitle.js';
@@ -7,7 +8,7 @@ import { usePageTitle } from '../hooks/usePageTitle.js';
 export default function OrgPickerScreen() {
   usePageTitle('Select Organisation');
   const navigate            = useNavigate();
-  const { allConnections, setTenant } = useAuthStore(s => ({ allConnections: s.allConnections, setTenant: s.setTenant }));
+  const { allConnections, setTenant } = useAuthStore(useShallow(s => ({ allConnections: s.allConnections, setTenant: s.setTenant })));
   const toast               = useToast();
   const [selected, setSelected] = useState(allConnections[0]?.tenantId ?? null);
 
