@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../lib/store.js';
 import { useReconciliation, useForceRefresh, RECON_KEY } from '../hooks/useReconciliation.js';
 import { useToast } from '../contexts/ToastContext.jsx';
+import { usePageTitle } from '../hooks/usePageTitle.js';
 import { translateError } from '../lib/utils.js';
 import StatGrid from '../components/dashboard/StatGrid.jsx';
 import AccountsTable from '../components/dashboard/AccountsTable.jsx';
@@ -45,6 +46,7 @@ export default function DashboardScreen() {
   }));
 
   const { data, isLoading, isError, error, dataUpdatedAt } = useReconciliation();
+  usePageTitle(data?.tenantName ?? tenantName ?? 'Dashboard');
 
   // Handle auth errors
   useEffect(() => {

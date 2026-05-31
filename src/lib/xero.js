@@ -43,15 +43,22 @@ export async function xeroGet(path, retried = false) {
   const tenantId = useAuthStore.getState().tenantId;
   if (!tenantId) throw new Error('NO_TENANT');
 
-  const resp = await withRetry(() =>
-    fetchWithTimeout(`${XERO_API_BASE}${path}`, {
-      headers: {
-        Authorization:    `Bearer ${token}`,
-        'Xero-tenant-id': tenantId,
-        Accept:           'application/json',
-      },
-    })
-  );
+  const doFetch = () => fetchWithTimeout(`${XERO_API_BASE}${path}`, {
+    headers: {
+      Authorization:    `Bearer ${token}`,
+      'Xero-tenant-id': tenantId,
+      Accept:           'application/json',
+    },
+  });
+
+  let resp = await withRetry(doFetch);
+
+  // Respect Retry-After on 429 (one retry with the header-specified delay)
+  if (resp.status === 429) {
+    const delay = Math.min(parseInt(resp.headers.get('Retry-After') ?? '10', 10) * 1000, 30_000);
+    await new Promise(r => setTimeout(r, delay));
+    resp = await doFetch();
+  }
 
   if (resp.status === 401 && !retried) {
     await doRefreshToken();

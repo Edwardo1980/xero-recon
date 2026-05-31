@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../lib/store.js';
 import { REDIRECT_URI } from '../lib/constants.js';
 import { useToast } from '../contexts/ToastContext.jsx';
+import { usePageTitle } from '../hooks/usePageTitle.js';
 import Notice from '../components/ui/Notice.jsx';
 import WizardStepper from '../components/ui/WizardStepper.jsx';
 
@@ -16,6 +17,7 @@ export default function SetupScreen() {
   const setCredentials = useAuthStore(s => s.setCredentials);
   const toast          = useToast();
 
+  usePageTitle('Setup');
   const [copied, setCopied] = useState(false);
   const copyUri = async () => {
     try { await navigator.clipboard.writeText(REDIRECT_URI); setCopied(true); setTimeout(() => setCopied(false), 2000); }

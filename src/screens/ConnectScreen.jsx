@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../lib/store.js';
 import { buildAuthURL } from '../lib/auth.js';
+import { usePageTitle } from '../hooks/usePageTitle.js';
 import Notice from '../components/ui/Notice.jsx';
 import WizardStepper from '../components/ui/WizardStepper.jsx';
 
 export default function ConnectScreen() {
+  usePageTitle('Connect to Xero');
   const [loading,  setLoading]  = useState(false);
   const navigate   = useNavigate();
   const clientId   = useAuthStore(s => s.clientId);

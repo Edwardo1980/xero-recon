@@ -14,7 +14,7 @@ export function useSessionExpiry() {
     };
 
     check();
-    const id = setInterval(check, 60_000);
+    const id = setInterval(check, 30_000);
     return () => clearInterval(id);
   }, [expiresAt]);
 

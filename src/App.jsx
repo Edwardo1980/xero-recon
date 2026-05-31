@@ -5,6 +5,7 @@ import { REDIRECT_URI } from './lib/constants.js';
 import AlertBanners from './components/layout/AlertBanners.jsx';
 import Header from './components/layout/Header.jsx';
 import Footer from './components/layout/Footer.jsx';
+import ErrorBoundary from './components/ui/ErrorBoundary.jsx';
 import SetupScreen from './screens/SetupScreen.jsx';
 import ConnectScreen from './screens/ConnectScreen.jsx';
 import CallbackScreen from './screens/CallbackScreen.jsx';
@@ -69,14 +70,16 @@ export default function App() {
           <div id="ariaAnnounce" className="sr-only" aria-live="polite" aria-atomic="true" />
           <Header />
 
-          <Routes>
-            <Route path="/setup"     element={<SetupScreen />} />
-            <Route path="/connect"   element={<RequireCreds><ConnectScreen /></RequireCreds>} />
-            <Route path="/callback"  element={<RequireCreds><CallbackWrapper /></RequireCreds>} />
-            <Route path="/org-select" element={<RequireCreds><OrgPickerScreen /></RequireCreds>} />
-            <Route path="/dashboard" element={<RequireAuth><DashboardScreen /></RequireAuth>} />
-            <Route path="*"          element={<DefaultRedirect />} />
-          </Routes>
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/setup"      element={<SetupScreen />} />
+              <Route path="/connect"    element={<RequireCreds><ConnectScreen /></RequireCreds>} />
+              <Route path="/callback"   element={<RequireCreds><CallbackWrapper /></RequireCreds>} />
+              <Route path="/org-select" element={<RequireCreds><OrgPickerScreen /></RequireCreds>} />
+              <Route path="/dashboard"  element={<RequireAuth><DashboardScreen /></RequireAuth>} />
+              <Route path="*"           element={<DefaultRedirect />} />
+            </Routes>
+          </ErrorBoundary>
 
           <Footer />
         </div>

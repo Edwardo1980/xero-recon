@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../lib/store.js';
 import { useToast } from '../contexts/ToastContext.jsx';
+import { usePageTitle } from '../hooks/usePageTitle.js';
 
 export default function OrgPickerScreen() {
+  usePageTitle('Select Organisation');
   const navigate            = useNavigate();
   const { allConnections, setTenant } = useAuthStore(s => ({ allConnections: s.allConnections, setTenant: s.setTenant }));
   const toast               = useToast();
