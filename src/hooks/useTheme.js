@@ -9,22 +9,30 @@ function getInitialTheme() {
 export function useTheme() {
   const [light, setLight] = useState(getInitialTheme);
 
+  // Apply theme to DOM
   useEffect(() => {
     document.body.classList.toggle('light-mode', light);
     document.getElementById('metaThemeColor')?.setAttribute('content', light ? '#00c285' : '#00e5a0');
-    localStorage.setItem('xero_theme', light ? 'light' : 'dark');
   }, [light]);
 
-  // Follow system preference changes only when the user hasn't set an explicit preference
+  // Follow system preference changes; handler checks localStorage each time so
+  // once the user explicitly toggles the preference is respected immediately.
   useEffect(() => {
-    if (localStorage.getItem('xero_theme')) return;
     const mq = window.matchMedia('(prefers-color-scheme: light)');
-    const handler = e => setLight(e.matches);
+    const handler = e => {
+      if (!localStorage.getItem('xero_theme')) setLight(e.matches);
+    };
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  const toggle = useCallback(() => setLight(l => !l), []);
+  const toggle = useCallback(() => {
+    setLight(l => {
+      const next = !l;
+      localStorage.setItem('xero_theme', next ? 'light' : 'dark');
+      return next;
+    });
+  }, []);
 
   return { light, toggle };
 }
