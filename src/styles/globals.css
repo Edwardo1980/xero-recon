@@ -832,11 +832,10 @@
 
   /* ── Print ── */
   @media print {
-    body::before, .alert-banner, .toast-container, .status-pill,
+    body::before, .alert-banners-wrap, .toast-container, .status-pill,
     .btn-row, .org-badge, .kbd-hint, .dash-footer, .card-glow,
     .table-controls, .sort-th .sort-arrow, .faq-item, .tx-search,
-    .acc-chevron, #helpSection, .theme-toggle, .wizard-stepper,
-    #swUpdateBanner { display: none !important; }
+    .acc-chevron, #helpSection, .theme-toggle, .wizard-stepper { display: none !important; }
     body { background: #fff; color: #111; font-size: 11pt; }
     .wrap { max-width: 100%; padding: 0; }
     .stat { border: 1px solid #ccc; background: #f9f9f9; }
