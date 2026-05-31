@@ -86,8 +86,19 @@ export async function fetchReconciliationData() {
 
   const accounts = accResp.Accounts ?? [];
 
+  // Group transactions by account ID in one pass (O(N+M) vs O(N*M))
+  const txByAccount = new Map();
+  for (const tx of txs) {
+    const id = tx.BankAccount?.AccountID;
+    if (id) {
+      const list = txByAccount.get(id);
+      if (list) list.push(tx);
+      else txByAccount.set(id, [tx]);
+    }
+  }
+
   const accountSummary = accounts.map(acc => {
-    const accTxs = txs.filter(t => t.BankAccount?.AccountID === acc.AccountID);
+    const accTxs = txByAccount.get(acc.AccountID) ?? [];
     return {
       id:           acc.AccountID,
       name:         acc.Name,
