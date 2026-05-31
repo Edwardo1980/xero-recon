@@ -49,7 +49,7 @@ export default function TransactionList({ acc }) {
           rel="noopener noreferrer"
           className="btn btn-secondary"
           style={{ padding: '6px 12px', fontSize: 10, whiteSpace: 'nowrap', width: 'auto' }}
-          aria-label={`Open ${acc.name} in Xero to reconcile`}
+          aria-label={`Open ${acc.name} in Xero to reconcile (opens in new tab)`}
         >
           Open in Xero →
         </a>
@@ -93,7 +93,7 @@ export default function TransactionList({ acc }) {
       {base.length > MAX_SHOW && (
         <div className="tx-more">
           Showing {MAX_SHOW} of {base.length}{q ? ' matching' : ''} —{' '}
-          <a href={xeroUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--blue)' }}>
+          <a href={xeroUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--blue)' }} aria-label="Open all transactions in Xero (opens in new tab)">
             open Xero to see all
           </a>
         </div>
