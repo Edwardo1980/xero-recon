@@ -13,7 +13,7 @@ export default function AlertBanners() {
 
   useEffect(() => {
     document.body.classList.toggle('has-banner', hasBanner);
-    return () => { if (!hasBanner) document.body.classList.remove('has-banner'); };
+    return () => document.body.classList.remove('has-banner');
   }, [hasBanner]);
 
   // Skip initial mount — only toast when status changes from offline → online
@@ -24,7 +24,7 @@ export default function AlertBanners() {
   }, [online, toast]);
 
   return (
-    <>
+    <div className="alert-banners-wrap">
       {!online && (
         <div className="alert-banner offline show" role="alert" aria-live="assertive">
           <span aria-hidden="true">⚡</span>
@@ -59,6 +59,6 @@ export default function AlertBanners() {
           </button>
         </div>
       )}
-    </>
+    </div>
   );
 }

@@ -644,10 +644,16 @@
     .status-pill span { display: none; }
   }
 
-  /* ── Alert banners (offline / session expiry) ── */
-  .alert-banner {
+  /* ── Alert banners (offline / session expiry / SW update) ── */
+  /* Wrapper is fixed so stacked banners fill vertically, not on top of each other */
+  .alert-banners-wrap {
     position: fixed;
     top: 0; left: 0; right: 0;
+    z-index: 8888;
+    display: flex;
+    flex-direction: column;
+  }
+  .alert-banner {
     padding: 10px 20px;
     font-size: 11px;
     font-family: 'DM Mono', monospace;
@@ -655,7 +661,6 @@
     align-items: center;
     justify-content: center;
     gap: 10px;
-    z-index: 8888;
   }
   .alert-banner.offline { background: #2a150e; color: #ffaa88; border-bottom: 1px solid rgba(255,112,67,0.3); }
   .alert-banner.session { background: #231f0a; color: var(--gold); border-bottom: 1px solid rgba(255,201,64,0.3); }
