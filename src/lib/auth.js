@@ -43,7 +43,7 @@ export async function withRetry(fn, maxAttempts = 3) {
       const permanent =
         e.message.includes('401') || e.message.includes('403') ||
         e.message.includes('State mismatch') || e.name === 'AbortError' ||
-        e.message === 'NOT_AUTHENTICATED';
+        e.message === 'NOT_AUTHENTICATED' || e.message === 'NO_TENANT';
       if (permanent || i === maxAttempts - 1) throw e;
       await new Promise(r => setTimeout(r, (i + 1) * 1500));
     }

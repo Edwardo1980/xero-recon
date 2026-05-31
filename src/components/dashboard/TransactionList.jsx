@@ -8,12 +8,13 @@ export default function TransactionList({ acc }) {
 
   const q    = search.toLowerCase();
   const txs  = acc.transactions ?? [];
-  const shown = txs.slice(0, MAX_SHOW);
-  const filtered = q ? shown.filter(tx =>
+  // Filter all transactions first, then cap; searching only a slice would miss results
+  const base     = q ? txs.filter(tx =>
     (tx.Contact?.Name ?? '').toLowerCase().includes(q) ||
     (tx.Reference ?? '').toLowerCase().includes(q) ||
     parseXeroDate(tx.Date).toLowerCase().includes(q)
-  ) : shown;
+  ) : txs;
+  const filtered = base.slice(0, MAX_SHOW);
 
   const xeroUrl = `https://go.xero.com/Bank/Reconcile.aspx?accountID=${encodeURIComponent(acc.id)}`;
 
@@ -73,9 +74,9 @@ export default function TransactionList({ acc }) {
       })}
 
       {/* "More" note */}
-      {!q && acc.count > MAX_SHOW && (
+      {base.length > MAX_SHOW && (
         <div className="tx-more">
-          Showing {MAX_SHOW} of {acc.count} —{' '}
+          Showing {MAX_SHOW} of {base.length}{q ? ' matching' : ''} —{' '}
           <a href={xeroUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--blue)' }}>
             open Xero to see all
           </a>

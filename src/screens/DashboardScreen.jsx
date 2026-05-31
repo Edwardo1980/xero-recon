@@ -91,6 +91,13 @@ export default function DashboardScreen() {
     }
   };
 
+  const [, tick] = useState(0);
+  useEffect(() => {
+    if (!dataUpdatedAt) return;
+    const id = setInterval(() => tick(n => n + 1), 30_000);
+    return () => clearInterval(id);
+  }, [dataUpdatedAt]);
+
   const lastUpdated = dataUpdatedAt
     ? (() => {
         const secs = Math.floor((Date.now() - dataUpdatedAt) / 1000);
