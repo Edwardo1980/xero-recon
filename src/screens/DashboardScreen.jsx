@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useAuthStore } from '../lib/store.js';
@@ -72,10 +72,12 @@ export default function DashboardScreen() {
   }, [data, isLoading, forceRefresh, toast]);
 
   const [disconnectConfirm, setDisconnectConfirm] = useState(false);
+  const disconnectTimerRef = useRef(null);
+  useEffect(() => () => clearTimeout(disconnectTimerRef.current), []);
   const onDisconnect = () => {
     if (!disconnectConfirm) {
       setDisconnectConfirm(true);
-      setTimeout(() => setDisconnectConfirm(false), 4000);
+      disconnectTimerRef.current = setTimeout(() => setDisconnectConfirm(false), 4000);
     } else {
       useAuthStore.getState().clearAll();
       navigate('/connect');

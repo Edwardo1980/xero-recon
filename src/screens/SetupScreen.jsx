@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../lib/store.js';
 import { REDIRECT_URI } from '../lib/constants.js';
@@ -19,8 +19,10 @@ export default function SetupScreen() {
 
   usePageTitle('Setup');
   const [copied, setCopied] = useState(false);
+  const copiedTimerRef = useRef(null);
+  useEffect(() => () => clearTimeout(copiedTimerRef.current), []);
   const copyUri = async () => {
-    try { await navigator.clipboard.writeText(REDIRECT_URI); setCopied(true); setTimeout(() => setCopied(false), 2000); }
+    try { await navigator.clipboard.writeText(REDIRECT_URI); setCopied(true); copiedTimerRef.current = setTimeout(() => setCopied(false), 2000); }
     catch { toast('Copy failed — please select and copy the URI manually.', 'error'); }
   };
 
