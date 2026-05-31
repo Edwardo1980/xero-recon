@@ -30,7 +30,7 @@ export default function TransactionList({ acc }) {
             aria-label={`Search transactions for ${acc.name}`}
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ width: '100%' }}
+            style={{ width: '100%', paddingRight: search ? 28 : undefined }}
           />
           {search && (
             <button

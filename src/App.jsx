@@ -68,26 +68,24 @@ export default function App() {
       <OAuthInterceptor>
         <a href="#main-content" className="skip-link">Skip to main content</a>
         <ScrollToTop />
-        <AlertBanners />
-        <div id="main-content" className="wrap" role="main">
-          <div id="ariaAnnounce" className="sr-only" aria-live="polite" aria-atomic="true" />
-          <Header />
-
-          <ErrorBoundary>
+        <ErrorBoundary>
+          <AlertBanners />
+          <div id="main-content" className="wrap" role="main">
+            <div id="ariaAnnounce" className="sr-only" aria-live="polite" aria-atomic="true" />
+            <Header />
             <Suspense fallback={<div className="loader" role="status" aria-label="Loading…"><div className="spinner" aria-hidden="true" /></div>}>
-            <Routes>
-              <Route path="/setup"      element={<SetupScreen />} />
-              <Route path="/connect"    element={<RequireCreds><ConnectScreen /></RequireCreds>} />
-              <Route path="/callback"   element={<RequireCreds><CallbackWrapper /></RequireCreds>} />
-              <Route path="/org-select" element={<RequireCreds><OrgPickerScreen /></RequireCreds>} />
-              <Route path="/dashboard"  element={<RequireAuth><DashboardScreen /></RequireAuth>} />
-              <Route path="*"           element={<DefaultRedirect />} />
-            </Routes>
+              <Routes>
+                <Route path="/setup"      element={<SetupScreen />} />
+                <Route path="/connect"    element={<RequireCreds><ConnectScreen /></RequireCreds>} />
+                <Route path="/callback"   element={<RequireCreds><CallbackWrapper /></RequireCreds>} />
+                <Route path="/org-select" element={<RequireCreds><OrgPickerScreen /></RequireCreds>} />
+                <Route path="/dashboard"  element={<RequireAuth><DashboardScreen /></RequireAuth>} />
+                <Route path="*"           element={<DefaultRedirect />} />
+              </Routes>
             </Suspense>
-          </ErrorBoundary>
-
-          <Footer />
-        </div>
+            <Footer />
+          </div>
+        </ErrorBoundary>
       </OAuthInterceptor>
     </HashRouter>
   );

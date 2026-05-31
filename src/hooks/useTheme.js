@@ -15,6 +15,15 @@ export function useTheme() {
     localStorage.setItem('xero_theme', light ? 'light' : 'dark');
   }, [light]);
 
+  // Follow system preference changes only when the user hasn't set an explicit preference
+  useEffect(() => {
+    if (localStorage.getItem('xero_theme')) return;
+    const mq = window.matchMedia('(prefers-color-scheme: light)');
+    const handler = e => setLight(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
   const toggle = useCallback(() => setLight(l => !l), []);
 
   return { light, toggle };
