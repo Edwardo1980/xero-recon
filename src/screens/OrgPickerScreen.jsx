@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuthStore } from '../lib/store.js';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { usePageTitle } from '../hooks/usePageTitle.js';
@@ -10,6 +10,8 @@ export default function OrgPickerScreen() {
   const { allConnections, setTenant } = useAuthStore(s => ({ allConnections: s.allConnections, setTenant: s.setTenant }));
   const toast               = useToast();
   const [selected, setSelected] = useState(allConnections[0]?.tenantId ?? null);
+
+  if (!allConnections.length) return <Navigate to="/connect" replace />;
 
   const onSelect = () => {
     const conn = allConnections.find(c => c.tenantId === selected);
