@@ -29,7 +29,7 @@ Two tiers of persistence, both under `useAuthStore`:
 
 ### API layer (`src/lib/auth.js` + `src/lib/xero.js`)
 - `fetchWithTimeout(url, options, ms=15000)` — wraps every HTTP call with an AbortController
-- `withRetry(fn, maxAttempts=3)` — exponential backoff (1.5s, 3s); skips retry for 401/403/NOT_AUTHENTICATED/NO_TENANT/AbortError
+- `withRetry(fn, maxAttempts=3)` — exponential backoff (1.5s, 3s); skips retry for 401/403/429/Permission-denied/NOT_AUTHENTICATED/NO_TENANT/AbortError/rate-limit
 - `getToken()` — refreshes automatically if the token is within 2 minutes of expiry
 - `doRefreshToken()` — deduped: concurrent calls share one in-flight promise via `_refreshInFlight`
 - `xeroGet(path)` — adds auth headers, handles 401 with one token-refresh retry, handles 429 with Retry-After delay
@@ -39,7 +39,7 @@ Two tiers of persistence, both under `useAuthStore`:
 HashRouter is used so `?code=&state=` OAuth params land in `window.location.search` (not swallowed by the router). Route guards: `RequireAuth` (needs clientId + accessToken), `RequireCreds` (needs clientId only). All five screens are lazy-loaded via `React.lazy`.
 
 ### Data fetching
-TanStack Query v5 via `useReconciliation()` / `useForceRefresh()` in `src/hooks/useReconciliation.js`. Cache is stale after 2 minutes (`CACHE_STALE_MS`). `NOT_AUTHENTICATED`, `NO_TENANT`, and 403 errors are not retried.
+TanStack Query v5 via `useReconciliation()` / `useForceRefresh()` in `src/hooks/useReconciliation.js`. Cache is stale after 2 minutes (`CACHE_STALE_MS`). `NOT_AUTHENTICATED`, `NO_TENANT`, 403/Permission-denied, and 429/rate-limit errors are not retried (xeroGet already handles Retry-After for 429 before throwing).
 
 ### CSP
 Injected at **build time only** (not dev) by the `inject-csp` Vite plugin in `vite.config.js`. Dev server has no CSP so HMR works. The CSP restricts `connect-src` to `login.xero.com`, `api.xero.com`, and `identity.xero.com`.
@@ -52,6 +52,16 @@ Injected at **build time only** (not dev) by the `inject-csp` Vite plugin in `vi
 - Route changes are announced via `#ariaAnnounce` live region in `App.jsx`
 - External links include `(opens in new tab)` in their `aria-label`
 - `prefers-reduced-motion` disables all animations via `globals.css`
+
+### Service Worker (`public/sw.js`)
+Cache-first for the app shell (index.html, manifest, icon). Xero API calls always go to network. The SW does **not** call `skipWaiting()` on install — it waits for existing clients. `useSwUpdate()` in `useSessionWatcher.js` detects the waiting SW and shows the "Reload to update" banner. When the user clicks it, `SKIP_WAITING` is posted, the new SW activates, and the page reloads. Update `CACHE_NAME` manually when the shell changes significantly.
+
+### Zustand selector pattern
+Use `useShallow` from `zustand/react/shallow` when selecting multiple fields as an object. Without it, Zustand uses `Object.is` and re-renders on any store update even if the selected values haven't changed:
+```js
+import { useShallow } from 'zustand/react/shallow';
+const { a, b } = useAuthStore(useShallow(s => ({ a: s.a, b: s.b })));
+```
 
 ### Deployment
 Static files only — deploy `dist/` to any CDN or static host. Set `VITE_REDIRECT_URI` to the app's fixed URL if the auto-detected `window.location` would be wrong (e.g. behind a reverse proxy). Register the same URI as the Xero app's redirect URI.
