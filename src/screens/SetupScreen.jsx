@@ -75,35 +75,35 @@ export default function SetupScreen() {
           </div>
         </div>
 
-        <div className="field">
-          <label htmlFor="inputClientId">Client ID</label>
-          <input
-            id="inputClientId" type="text" value={clientId}
-            onChange={e => setClientId(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && onSave()}
-            placeholder="Paste your Xero Client ID…"
-            autoComplete="off" spellCheck={false}
-            aria-invalid={!!error} aria-describedby={error ? 'setup-error' : undefined}
-          />
-        </div>
-        <div className="field">
-          <label htmlFor="inputClientSecret">
-            Client Secret <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 11 }}>(optional)</span>
-          </label>
-          <input
-            id="inputClientSecret" type="password" value={clientSecret}
-            onChange={e => setClientSecret(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && onSave()}
-            placeholder="Leave blank for PKCE-only (recommended)…"
-            autoComplete="off"
-          />
-          <p style={{ margin: '4px 0 0', fontSize: 11, color: 'var(--text-muted)' }}>
-            PKCE works without a secret. If you enter one, it will be stored in your browser's local storage.
-          </p>
-        </div>
+        <form onSubmit={e => { e.preventDefault(); onSave(); }}>
+          <div className="field">
+            <label htmlFor="inputClientId">Client ID</label>
+            <input
+              id="inputClientId" type="text" value={clientId}
+              onChange={e => setClientId(e.target.value)}
+              placeholder="Paste your Xero Client ID…"
+              autoComplete="off" spellCheck={false}
+              aria-invalid={!!error} aria-describedby={error ? 'setup-error' : undefined}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="inputClientSecret">
+              Client Secret <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: 11 }}>(optional)</span>
+            </label>
+            <input
+              id="inputClientSecret" type="password" value={clientSecret}
+              onChange={e => setClientSecret(e.target.value)}
+              placeholder="Leave blank for PKCE-only (recommended)…"
+              autoComplete="off"
+            />
+            <p style={{ margin: '4px 0 0', fontSize: 11, color: 'var(--text-muted)' }}>
+              PKCE works without a secret. If you enter one, it will be stored in your browser's local storage.
+            </p>
+          </div>
 
-        {error && <Notice id="setup-error" type="warn">{error}</Notice>}
-        <button type="button" className="btn btn-primary" onClick={onSave}>Save &amp; Connect to Xero →</button>
+          {error && <Notice id="setup-error" type="warn">{error}</Notice>}
+          <button type="submit" className="btn btn-primary">Save &amp; Connect to Xero →</button>
+        </form>
       </div>
     </div>
   );
