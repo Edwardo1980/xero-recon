@@ -3,8 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://login.xero.com https://api.xero.com; img-src 'self' data:;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://login.xero.com https://api.xero.com; img-src 'self' data:; worker-src 'self';">
 <title>Xero Reconciliation Assistant</title>
+<meta name="description" content="Track and act on unreconciled Xero bank transactions in one view. Uses Xero's official OAuth2 API — no password stored.">
+<meta name="application-name" content="Xero Recon">
+<meta name="theme-color" id="metaThemeColor" content="#00e5a0">
+<link rel="icon" type="image/svg+xml" href="./icon.svg">
+<link rel="apple-touch-icon" href="./icon.svg">
+<link rel="manifest" href="./manifest.json">
+<!-- Open Graph / social sharing -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Xero Reconciliation Assistant">
+<meta property="og:description" content="Track and act on unreconciled Xero bank transactions in one view.">
+<meta property="og:image" content="./icon.svg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Xero Reconciliation Assistant">
+<meta name="twitter:description" content="Track unreconciled Xero bank transactions — OAuth2 PKCE, no password stored.">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Clash+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -27,6 +41,85 @@
     --radius: 12px;
     --radius-sm: 8px;
   }
+
+  /* ── Light mode overrides ── */
+  body.light-mode {
+    --bg: #f0f4fb;
+    --surface: #ffffff;
+    --surface2: #e8eef9;
+    --surface3: #dce5f5;
+    --border: #c8d5ea;
+    --border2: #adc0db;
+    --text: #192236;
+    --text-dim: #4a6080;
+    --text-muted: #8099bb;
+    --accent-dim: rgba(0,180,120,0.12);
+    --blue-dim: rgba(30,120,220,0.10);
+    --warn-dim: rgba(210,80,40,0.10);
+    color-scheme: light;
+  }
+  body.light-mode::before {
+    background-image:
+      linear-gradient(rgba(0,150,100,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,150,100,0.05) 1px, transparent 1px);
+  }
+  body.light-mode .logo { box-shadow: 0 0 24px rgba(0,200,140,0.2); }
+  body.light-mode .status-pill.connected { background: #e8fdf5; }
+  body.light-mode .skeleton-box {
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%);
+  }
+
+  /* ── Theme toggle button ── */
+  .theme-toggle {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+  .theme-toggle:hover { border-color: var(--border2); transform: scale(1.05); }
+
+  /* ── Setup wizard stepper ── */
+  .wizard-stepper {
+    display: flex; align-items: center;
+    margin-bottom: 24px;
+    gap: 0;
+  }
+  .wstep {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 10px; color: var(--text-muted);
+    letter-spacing: 0.05em;
+  }
+  .wstep-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .wstep.active .wstep-num {
+    background: linear-gradient(135deg, var(--accent), var(--blue));
+    border: none; color: #080b10; font-weight: 600;
+  }
+  .wstep.active { color: var(--text); }
+  .wstep.done .wstep-num { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .wstep.done { color: var(--text-dim); }
+  .wstep-line { flex: 1; height: 1px; background: var(--border); margin: 0 8px; }
+
+  /* ── SW update banner ── */
+  .sw-update-banner {
+    display: none;
+    align-items: center; justify-content: center; gap: 10px;
+    background: var(--blue-dim); border-bottom: 1px solid rgba(61,158,255,0.2);
+    padding: 10px 20px; font-size: 11px; color: #7bbfff;
+    font-family: 'DM Mono', monospace;
+  }
+  .sw-update-banner.show { display: flex; }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -729,7 +822,8 @@
     body::before, .alert-banner, .toast-container, .status-pill,
     .btn-row, .org-badge, .kbd-hint, .dash-footer, .card-glow,
     .table-controls, .sort-th .sort-arrow, .faq-item, .tx-search,
-    .acc-chevron, #helpSection { display: none !important; }
+    .acc-chevron, #helpSection, .theme-toggle, .wizard-stepper,
+    #swUpdateBanner { display: none !important; }
     body { background: #fff; color: #111; font-size: 11pt; }
     .wrap { max-width: 100%; padding: 0; }
     .stat { border: 1px solid #ccc; background: #f9f9f9; }
@@ -755,6 +849,13 @@
 </style>
 </head>
 <body>
+<!-- SW update notification -->
+<div id="swUpdateBanner" class="sw-update-banner" role="status" aria-live="polite">
+  <span aria-hidden="true">🔄</span>
+  A new version is available.
+  <button onclick="applySwUpdate()" class="btn btn-ghost" style="padding:4px 10px;font-size:10px;color:#7bbfff;border-color:rgba(61,158,255,0.3);">Reload to update</button>
+</div>
+
 <!-- Fixed alert banners -->
 <div id="bannerOffline" class="alert-banner offline" role="alert" aria-live="assertive">
   <span aria-hidden="true">⚡</span>
@@ -782,12 +883,20 @@
       <div class="dot" aria-hidden="true"></div>
       <span id="statusText">Not connected</span>
     </div>
+    <button class="theme-toggle" id="btnTheme" aria-label="Toggle light/dark mode" title="Toggle theme">🌙</button>
   </header>
 
   <!-- ══ SCREEN: Setup ══ -->
   <div class="screen active" id="screen-setup" role="region" aria-label="Initial setup">
     <div class="card">
       <div class="card-glow" aria-hidden="true"></div>
+      <div class="wizard-stepper" aria-label="Setup progress">
+        <div class="wstep active"><span class="wstep-num" aria-current="step">1</span><span>Create app</span></div>
+        <div class="wstep-line"></div>
+        <div class="wstep"><span class="wstep-num">2</span><span>Connect</span></div>
+        <div class="wstep-line"></div>
+        <div class="wstep"><span class="wstep-num">3</span><span>Ready</span></div>
+      </div>
       <h2>Welcome — one-time setup</h2>
       <p>This tool connects to Xero using their official API. You need a free Xero developer app to get started. Takes about 3 minutes.</p>
 
@@ -849,6 +958,13 @@
   <div class="screen" id="screen-callback" role="region" aria-label="Complete Xero connection">
     <div class="card">
       <div class="card-glow" aria-hidden="true"></div>
+      <div class="wizard-stepper" aria-label="Setup progress">
+        <div class="wstep done"><span class="wstep-num">✓</span><span>Create app</span></div>
+        <div class="wstep-line"></div>
+        <div class="wstep active"><span class="wstep-num" aria-current="step">2</span><span>Connect</span></div>
+        <div class="wstep-line"></div>
+        <div class="wstep"><span class="wstep-num">3</span><span>Ready</span></div>
+      </div>
       <h2>Complete Connection</h2>
       <p>Xero has redirected you back. Paste the full URL from your browser address bar below to complete the connection.</p>
 
@@ -870,6 +986,13 @@
   <div class="screen" id="screen-connect" role="region" aria-label="Connect to Xero">
     <div class="card">
       <div class="card-glow" aria-hidden="true"></div>
+      <div class="wizard-stepper" aria-label="Setup progress">
+        <div class="wstep done"><span class="wstep-num">✓</span><span>Create app</span></div>
+        <div class="wstep-line"></div>
+        <div class="wstep active"><span class="wstep-num" aria-current="step">2</span><span>Connect</span></div>
+        <div class="wstep-line"></div>
+        <div class="wstep"><span class="wstep-num">3</span><span>Ready</span></div>
+      </div>
       <h2>Connect to Xero</h2>
       <p>Click below to open Xero's secure login. You'll authorise this app, then be redirected back to complete the connection.</p>
 
@@ -2075,6 +2198,61 @@ document.addEventListener('visibilitychange', () => {
   if (!cacheIsValid()) loadDashboard(true);
 });
 
+// ── Theme (dark / light) ──────────────────────────────────────
+function initTheme() {
+  const saved = localStorage.getItem('xero_theme');
+  const preferLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+  const isLight = saved ? saved === 'light' : preferLight;
+  applyTheme(isLight, false);
+}
+
+function applyTheme(light, save = true) {
+  document.body.classList.toggle('light-mode', light);
+  $('btnTheme').textContent     = light ? '🌙' : '☀️';
+  $('btnTheme').title           = light ? 'Switch to dark mode' : 'Switch to light mode';
+  $('btnTheme').setAttribute('aria-label', light ? 'Switch to dark mode' : 'Switch to light mode');
+  $('metaThemeColor').setAttribute('content', light ? '#00c285' : '#00e5a0');
+  if (save) localStorage.setItem('xero_theme', light ? 'light' : 'dark');
+}
+
+$('btnTheme').addEventListener('click', () => {
+  applyTheme(!document.body.classList.contains('light-mode'));
+});
+
+// ── Service Worker registration ───────────────────────────────
+let _swWaiting = null;
+
+function applySwUpdate() {
+  if (_swWaiting) _swWaiting.postMessage('SKIP_WAITING');
+  window.location.reload();
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('./sw.js');
+
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            _swWaiting = newSW;
+            $('swUpdateBanner').classList.add('show');
+            document.body.classList.add('has-banner');
+          }
+        });
+      });
+
+      // Reload when the new SW takes over
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (_swWaiting) window.location.reload();
+      });
+    } catch (e) {
+      console.warn('SW registration failed:', e);
+    }
+  });
+}
+
 // ── Global error boundary ─────────────────────────────────────
 window.addEventListener('error', e => {
   if (e.message && e.message.includes('ResizeObserver')) return; // harmless browser noise
@@ -2101,6 +2279,7 @@ window.addEventListener('unhandledrejection', e => {
 });
 
 // ── Boot ──────────────────────────────────────────────────────
+initTheme();
 init();
 </script>
 </body>

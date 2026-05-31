@@ -1,0 +1,35 @@
+{
+  "name": "Xero Reconciliation Assistant",
+  "short_name": "Xero Recon",
+  "description": "Track and act on unreconciled Xero bank transactions in one view.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#080b10",
+  "theme_color": "#00e5a0",
+  "lang": "en-AU",
+  "categories": ["finance", "business", "productivity"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Open the reconciliation dashboard",
+      "url": "./index.html"
+    }
+  ]
+}
