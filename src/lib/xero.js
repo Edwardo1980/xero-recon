@@ -1,0 +1,100 @@
+import { XERO_API_BASE, XERO_CONNECTIONS } from './constants.js';
+import { getToken, doRefreshToken, fetchWithTimeout, withRetry } from './auth.js';
+import { useAuthStore } from './store.js';
+
+// ── Connections / tenant ──────────────────────────────────────
+export async function loadConnections() {
+  const token = await getToken();
+  const resp = await fetchWithTimeout(XERO_CONNECTIONS, {
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  });
+  if (!resp.ok) throw new Error('Could not fetch Xero connections');
+  const conns = await resp.json();
+  if (!conns.length) throw new Error('No Xero organisations found. Make sure your app has access to at least one organisation.');
+  useAuthStore.getState().setConnections(conns);
+  return conns;
+}
+
+export async function getTenantId() {
+  const { tenantId } = useAuthStore.getState();
+  if (tenantId) return tenantId;
+
+  const conns = await loadConnections();
+  // If single org, auto-select
+  if (conns.length === 1) {
+    useAuthStore.getState().setTenant(conns[0].tenantId, conns[0].tenantName);
+    return conns[0].tenantId;
+  }
+  // Multiple orgs — caller must pick (returns null to trigger org picker flow)
+  return null;
+}
+
+// ── Core API call ─────────────────────────────────────────────
+const STATUS_MESSAGES = {
+  403: (path) => `Permission denied on ${path}. Check your app scopes in the Xero developer portal.`,
+  404: (path) => `Xero resource not found: ${path}`,
+  429: ()     => 'Xero rate limit reached. Please wait before refreshing.',
+  500: ()     => 'Xero internal error. Please try again later.',
+  503: ()     => 'Xero is temporarily unavailable. Please try again later.',
+};
+
+export async function xeroGet(path, retried = false) {
+  const token    = await getToken();
+  const tenantId = useAuthStore.getState().tenantId;
+  if (!tenantId) throw new Error('NO_TENANT');
+
+  const resp = await withRetry(() =>
+    fetchWithTimeout(`${XERO_API_BASE}${path}`, {
+      headers: {
+        Authorization:    `Bearer ${token}`,
+        'Xero-tenant-id': tenantId,
+        Accept:           'application/json',
+      },
+    })
+  );
+
+  if (resp.status === 401 && !retried) {
+    await doRefreshToken();
+    return xeroGet(path, true);
+  }
+
+  if (!resp.ok) {
+    const msgFn = STATUS_MESSAGES[resp.status];
+    throw new Error(msgFn ? msgFn(path) : `Xero API error ${resp.status} on ${path}`);
+  }
+
+  return resp.json();
+}
+
+// ── Data fetching ─────────────────────────────────────────────
+export async function fetchReconciliationData() {
+  const [txResp, accResp] = await Promise.all([
+    xeroGet('/BankTransactions?where=IsReconciled%3D%3Dfalse%26%26Status%3D%3D%22AUTHORISED%22'),
+    xeroGet('/Accounts?where=Type%3D%3D%22BANK%22%26%26Status%3D%3D%22ACTIVE%22'),
+  ]);
+
+  const txs      = txResp.BankTransactions ?? [];
+  const accounts = accResp.Accounts        ?? [];
+
+  const accountSummary = accounts.map(acc => {
+    const accTxs = txs.filter(t => t.BankAccount?.AccountID === acc.AccountID);
+    return {
+      id:           acc.AccountID,
+      name:         acc.Name,
+      code:         acc.Code || '—',
+      currency:     acc.CurrencyCode || 'AUD',
+      count:        accTxs.length,
+      total:        accTxs.reduce((s, t) => s + (t.Total || 0), 0),
+      transactions: accTxs,
+    };
+  });
+
+  const { tenantName } = useAuthStore.getState();
+  return {
+    tenantName:        tenantName ?? 'Your Organisation',
+    totalUnreconciled: txs.length,
+    totalValue:        txs.reduce((s, t) => s + Math.abs(t.Total || 0), 0),
+    accounts:          accountSummary,
+    currency:          accounts[0]?.CurrencyCode ?? 'AUD',
+  };
+}
