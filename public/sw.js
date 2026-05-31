@@ -11,11 +11,9 @@ const SHELL = [
 
 // ── Install: pre-cache the app shell ─────────────────────────
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(SHELL))
-      .then(() => self.skipWaiting())
-  );
+  // Do NOT call skipWaiting() here — let the new SW wait so the page can
+  // notify the user via useSwUpdate and give them control over when to reload.
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)));
 });
 
 // ── Activate: remove old caches ───────────────────────────────

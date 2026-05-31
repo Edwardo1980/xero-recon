@@ -21,7 +21,7 @@ export default function AlertBanners() {
   useEffect(() => {
     if (!mountedRef.current) { mountedRef.current = true; return; }
     if (online) toast('Back online', 'success');
-  }, [online]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [online, toast]);
 
   return (
     <>

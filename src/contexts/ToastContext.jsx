@@ -25,7 +25,7 @@ export function ToastProvider({ children }) {
       {children}
       <div className="toast-container" id="toastContainer" aria-label="Notifications">
         {toasts.map(t => (
-          <div key={t.id} className={`toast ${t.type}`} role="status" onClick={() => dismiss(t.id)}>
+          <div key={t.id} className={`toast ${t.type}`} role={t.type === 'error' ? 'alert' : 'status'} onClick={() => dismiss(t.id)}>
             <span aria-hidden="true">{t.type === 'success' ? '✓' : t.type === 'error' ? '⚠' : 'ℹ'}</span>
             <span>{t.message}</span>
           </div>

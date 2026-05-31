@@ -18,14 +18,14 @@ function SortTh({ col, label, sortCol, sortDir, onSort, style }) {
   const ariaSort = active ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none';
   return (
     <div role="columnheader" style={style} aria-sort={ariaSort}>
-      <span
+      <button
+        type="button"
         className="sort-th"
         onClick={() => onSort(col)}
-        tabIndex={0}
-        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSort(col); } }}
+        aria-label={`Sort by ${label}${active ? `, currently ${ariaSort}` : ''}`}
       >
         {label} <span className={`sort-arrow${active ? ' active' : ''}`} aria-hidden="true">{arrow}</span>
-      </span>
+      </button>
     </div>
   );
 }
