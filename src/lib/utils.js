@@ -1,7 +1,3 @@
-export function esc(s) {
-  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
 export function fmt(n, currency = '') {
   const abs = Math.abs(n);
   if (abs >= 1_000_000) return `${currency} ${(n / 1_000_000).toFixed(1)}M`;

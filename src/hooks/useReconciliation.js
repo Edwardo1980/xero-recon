@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchReconciliationData } from '../lib/xero.js';
 import { CACHE_STALE_MS } from '../lib/constants.js';
@@ -21,5 +22,5 @@ export function useReconciliation() {
 
 export function useForceRefresh() {
   const qc = useQueryClient();
-  return () => qc.invalidateQueries({ queryKey: RECON_KEY });
+  return useCallback(() => qc.invalidateQueries({ queryKey: RECON_KEY }), [qc]);
 }
