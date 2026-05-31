@@ -85,8 +85,14 @@ export async function exchangeCode(code, returnedState) {
 
   const resp = await fetchWithTimeout(XERO_TOKEN_URL, { method: 'POST', headers, body });
   if (!resp.ok) {
-    const text = await resp.text();
-    throw new Error(`Token exchange failed (${resp.status}): ${text}`);
+    let detail = '';
+    try {
+      const j = await resp.clone().json();
+      detail = j.error_description || j.error || '';
+    } catch {
+      detail = await resp.text().catch(() => '');
+    }
+    throw new Error(`Token exchange failed (${resp.status})${detail ? `: ${detail}` : ''}`);
   }
   const tokens = await resp.json();
   saveTokens(tokens);

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './lib/store.js';
 import { REDIRECT_URI } from './lib/constants.js';
@@ -6,11 +6,12 @@ import AlertBanners from './components/layout/AlertBanners.jsx';
 import Header from './components/layout/Header.jsx';
 import Footer from './components/layout/Footer.jsx';
 import ErrorBoundary from './components/ui/ErrorBoundary.jsx';
-import SetupScreen from './screens/SetupScreen.jsx';
-import ConnectScreen from './screens/ConnectScreen.jsx';
-import CallbackScreen from './screens/CallbackScreen.jsx';
-import OrgPickerScreen from './screens/OrgPickerScreen.jsx';
-import DashboardScreen from './screens/DashboardScreen.jsx';
+
+const SetupScreen     = lazy(() => import('./screens/SetupScreen.jsx'));
+const ConnectScreen   = lazy(() => import('./screens/ConnectScreen.jsx'));
+const CallbackScreen  = lazy(() => import('./screens/CallbackScreen.jsx'));
+const OrgPickerScreen = lazy(() => import('./screens/OrgPickerScreen.jsx'));
+const DashboardScreen = lazy(() => import('./screens/DashboardScreen.jsx'));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -78,6 +79,7 @@ export default function App() {
           <Header />
 
           <ErrorBoundary>
+            <Suspense fallback={<div className="loader" role="status" aria-label="Loading…"><div className="spinner" aria-hidden="true" /></div>}>
             <Routes>
               <Route path="/setup"      element={<SetupScreen />} />
               <Route path="/connect"    element={<RequireCreds><ConnectScreen /></RequireCreds>} />
@@ -86,6 +88,7 @@ export default function App() {
               <Route path="/dashboard"  element={<RequireAuth><DashboardScreen /></RequireAuth>} />
               <Route path="*"           element={<DefaultRedirect />} />
             </Routes>
+            </Suspense>
           </ErrorBoundary>
 
           <Footer />

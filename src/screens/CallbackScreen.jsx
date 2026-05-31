@@ -9,9 +9,9 @@ import Notice from '../components/ui/Notice.jsx';
 import WizardStepper from '../components/ui/WizardStepper.jsx';
 
 export default function CallbackScreen({ code, state }) {
-  const [url,     setUrl]     = useState(code ? '' : '');
+  const [url,     setUrl]     = useState('');
   const [error,   setError]   = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(Boolean(code));
   const navigate  = useNavigate();
   const toast     = useToast();
   const { setTenant } = useAuthStore.getState();
