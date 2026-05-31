@@ -15,11 +15,16 @@ export function fmt(n, currency = '') {
   return `${currency} ${parseFloat(n).toFixed(2)}`;
 }
 
+const DATE_FMT = { day: 'numeric', month: 'short', year: '2-digit' };
+
 export function parseXeroDate(xeroDate) {
   if (!xeroDate) return '—';
   const m = String(xeroDate).match(/\/Date\((-?\d+)/);
-  if (m) return new Date(parseInt(m[1])).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: '2-digit' });
-  return xeroDate;
+  if (m) return new Date(parseInt(m[1])).toLocaleDateString(undefined, DATE_FMT);
+  // Also handle ISO date strings (e.g. "2024-01-15" or "2024-01-15T00:00:00")
+  const d = new Date(xeroDate);
+  if (!isNaN(d.getTime())) return d.toLocaleDateString(undefined, DATE_FMT);
+  return String(xeroDate);
 }
 
 export function translateError(msg) {

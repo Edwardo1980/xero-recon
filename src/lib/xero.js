@@ -5,11 +5,14 @@ import { useAuthStore } from './store.js';
 // ── Connections / tenant ──────────────────────────────────────
 export async function loadConnections() {
   const token = await getToken();
-  const resp = await fetchWithTimeout(XERO_CONNECTIONS, {
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  const conns = await withRetry(async () => {
+    const resp = await fetchWithTimeout(XERO_CONNECTIONS, {
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    });
+    if (resp.status === 401) throw new Error('NOT_AUTHENTICATED');
+    if (!resp.ok) throw new Error(`Could not fetch Xero connections (${resp.status})`);
+    return resp.json();
   });
-  if (!resp.ok) throw new Error('Could not fetch Xero connections');
-  const conns = await resp.json();
   if (!conns.length) throw new Error('No Xero organisations found. Make sure your app has access to at least one organisation.');
   useAuthStore.getState().setConnections(conns);
   return conns;

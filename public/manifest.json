@@ -2,6 +2,7 @@
   "name": "Xero Reconciliation Assistant",
   "short_name": "Xero Recon",
   "description": "Track and act on unreconciled Xero bank transactions in one view.",
+  "id": "./",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
