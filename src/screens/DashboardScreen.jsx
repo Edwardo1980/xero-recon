@@ -6,6 +6,7 @@ import { useReconciliation, useForceRefresh } from '../hooks/useReconciliation.j
 import { useToast } from '../contexts/ToastContext.jsx';
 import { usePageTitle } from '../hooks/usePageTitle.js';
 import { parseXeroDate, translateError } from '../lib/utils.js';
+import { Button } from '../components/ui/button.jsx';
 import StatGrid from '../components/dashboard/StatGrid.jsx';
 import AccountsTable from '../components/dashboard/AccountsTable.jsx';
 import HelpFaq from '../components/dashboard/HelpFaq.jsx';
@@ -25,8 +26,6 @@ function exportCSV(data) {
   );
   rows.push([]);
   rows.push(['Export date', new Date().toISOString(), '', 'Organisation', data.tenantName]);
-
-  // UTF-8 BOM ensures Excel on Windows reads accented characters correctly
   const csv  = '﻿' + rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const url  = URL.createObjectURL(blob);
@@ -36,29 +35,20 @@ function exportCSV(data) {
 }
 
 export default function DashboardScreen() {
-  const navigate      = useNavigate();
-  const toast         = useToast();
-  const forceRefresh  = useForceRefresh();
+  const navigate     = useNavigate();
+  const toast        = useToast();
+  const forceRefresh = useForceRefresh();
   const { tenantName, clearTokens, allConnections } = useAuthStore(useShallow(s => ({
     tenantName: s.tenantName, clearTokens: s.clearTokens, allConnections: s.allConnections,
   })));
-
   const { data, isLoading, isError, error, dataUpdatedAt } = useReconciliation();
   usePageTitle(data?.tenantName ?? tenantName ?? 'Dashboard');
 
-  // Handle auth errors
   useEffect(() => {
-    if (isError && error?.message === 'NOT_AUTHENTICATED') {
-      clearTokens();
-      navigate('/connect');
-      toast('Your session expired — please reconnect.', 'error');
-    }
-    if (isError && error?.message === 'NO_TENANT') {
-      navigate('/org-select');
-    }
+    if (isError && error?.message === 'NOT_AUTHENTICATED') { clearTokens(); navigate('/connect'); toast('Your session expired — please reconnect.', 'error'); }
+    if (isError && error?.message === 'NO_TENANT') { navigate('/org-select'); }
   }, [isError, error, clearTokens, navigate, toast]);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const onKey = e => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -102,83 +92,56 @@ export default function DashboardScreen() {
         {isLoading && <SkeletonDashboard />}
 
         {isError && error?.message !== 'NOT_AUTHENTICATED' && error?.message !== 'NO_TENANT' && (
-          <>
+          <div className="space-y-3">
             <Notice type="warn">{translateError(error?.message)}</Notice>
-            <div style={{ marginTop: 12 }}>
-              <button type="button" className="btn btn-secondary" onClick={() => forceRefresh()} style={{ width: 'auto', padding: '10px 20px' }}>
-                Try again
-              </button>
-            </div>
-          </>
+            <Button type="button" variant="secondary" onClick={() => forceRefresh()}>Try again</Button>
+          </div>
         )}
 
         {data && (
-          <>
+          <div className="space-y-1">
             <StatGrid data={data} />
             <AccountsTable accounts={data.accounts} currency={data.currency} />
             {data.totalUnreconciled === 0
-              ? <Notice type="success">All bank accounts are fully reconciled — nothing outstanding.</Notice>
-              : <Notice type="info">
-                  To reconcile in Xero: go to <strong>Accounting → Bank Accounts</strong> and click <strong>Reconcile</strong> next to each pending account. Expand any row above to view and deep-link directly into Xero.
+              ? <Notice type="success" className="mt-4">All bank accounts are fully reconciled — nothing outstanding.</Notice>
+              : <Notice type="info" className="mt-4">
+                  To reconcile in Xero: go to <strong>Accounting → Bank Accounts</strong> and click <strong>Reconcile</strong> next to each pending account.
                 </Notice>
             }
-          </>
+          </div>
         )}
       </div>
 
       <HelpFaq />
 
-      {/* Footer bar */}
       <div className="dash-footer">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+        <div className="flex items-center gap-3 flex-wrap">
           <span className="last-sync" aria-live="polite">{lastUpdated}</span>
           {allConnections.length > 1 && (
-            <button
-              type="button"
-              className="org-badge"
-              onClick={() => navigate('/org-select')}
-              aria-label={`Current org: ${tenantName ?? ''}. Click to switch.`}
-            >
+            <button type="button" className="org-badge" onClick={() => navigate('/org-select')} aria-label={`Current org: ${tenantName ?? ''}. Click to switch.`}>
               {tenantName} ▾
             </button>
           )}
-          <span className="kbd-hint" aria-hidden="true">
-            <kbd>R</kbd> refresh · <kbd>E</kbd> export
-          </span>
+          <span className="kbd-hint" aria-hidden="true"><kbd>R</kbd> refresh · <kbd>E</kbd> export</span>
         </div>
         <div className="btn-row">
-          <button
-            type="button"
-            className={`btn btn-secondary${isLoading ? ' btn-loading' : ''}`}
-            style={{ padding: '8px 14px', fontSize: 11 }}
-            onClick={() => { forceRefresh(); toast('Refreshing…', 'info', 1500); }}
-            disabled={isLoading}
-            aria-label="Refresh data"
-          >
+          <Button type="button" variant="secondary" size="sm" loading={isLoading} onClick={() => { forceRefresh(); toast('Refreshing…', 'info', 1500); }} disabled={isLoading} aria-label="Refresh data">
             {isLoading ? 'Refreshing…' : '↺ Refresh'}
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost"
-            style={{ fontSize: 11, padding: '8px 14px' }}
-            onClick={() => { if (data) { exportCSV(data); toast('CSV exported', 'success'); } else toast('No data to export yet — refresh first.', 'info'); }}
-            aria-label="Export reconciliation data as CSV"
-          >
+          </Button>
+          <Button type="button" variant="ghost" size="sm" onClick={() => { if (data) { exportCSV(data); toast('CSV exported', 'success'); } else toast('No data to export yet — refresh first.', 'info'); }} aria-label="Export reconciliation data as CSV">
             Export CSV
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className="btn btn-ghost"
-            style={{ color: disconnectConfirm ? 'var(--warn)' : undefined, borderColor: disconnectConfirm ? 'rgba(255,112,67,0.4)' : undefined }}
+            variant={disconnectConfirm ? 'destructive' : 'ghost'}
+            size="sm"
             onClick={onDisconnect}
             aria-label="Disconnect from Xero"
           >
             {disconnectConfirm ? 'Confirm disconnect' : 'Disconnect'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
   );
 }
-
-

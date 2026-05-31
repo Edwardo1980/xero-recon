@@ -1,7 +1,11 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const { version } = JSON.parse(readFileSync('./package.json', 'utf8'));
 
 const CSP = [
@@ -18,6 +22,7 @@ const CSP = [
 export default defineConfig({
   plugins: [
     react(),
+    tailwindcss(),
     {
       name: 'inject-csp',
       apply: 'build',
@@ -29,12 +34,16 @@ export default defineConfig({
       },
     },
   ],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   define: {
     __APP_VERSION__: JSON.stringify(version),
   },
   build: {
     outDir: 'dist',
-    // 'hidden': maps generated for error tracking but not referenced in bundles
     sourcemap: 'hidden',
   },
   server: {

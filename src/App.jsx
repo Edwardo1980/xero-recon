@@ -85,7 +85,12 @@ export default function App() {
           <div id="main-content" className="wrap" role="main">
             <div id="ariaAnnounce" className="sr-only" aria-live="polite" aria-atomic="true" />
             <Header />
-            <Suspense fallback={<div className="loader" role="status" aria-label="Loading…"><div className="spinner" aria-hidden="true" /></div>}>
+            <Suspense fallback={
+              <div className="flex items-center gap-3 p-8 text-[var(--color-muted)] text-sm" role="status" aria-label="Loading…">
+                <div className="spinner" aria-hidden="true" />
+                Loading…
+              </div>
+            }>
               <Routes>
                 <Route path="/setup"      element={<SetupScreen />} />
                 <Route path="/connect"    element={<RequireCreds><ConnectScreen /></RequireCreds>} />

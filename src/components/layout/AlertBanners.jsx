@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useSessionExpiry, useOnlineStatus, useSwUpdate } from '../../hooks/useSessionWatcher.js';
 import { doRefreshToken } from '../../lib/auth.js';
 import { useToast } from '../../contexts/ToastContext.jsx';
+import { Button } from '../ui/button.jsx';
 
 export default function AlertBanners() {
   const minsLeft = useSessionExpiry();
@@ -16,7 +17,6 @@ export default function AlertBanners() {
     return () => document.body.classList.remove('has-banner');
   }, [hasBanner]);
 
-  // Track actual banner stack height so .wrap padding-top stays exact
   const wrapRef = useRef(null);
   useEffect(() => {
     const el = wrapRef.current;
@@ -28,7 +28,6 @@ export default function AlertBanners() {
     return () => { ro.disconnect(); document.body.style.removeProperty('--banner-height'); };
   }, []);
 
-  // Skip initial mount — only toast when status changes from offline → online
   const mountedRef = useRef(false);
   useEffect(() => {
     if (!mountedRef.current) { mountedRef.current = true; return; }
@@ -46,29 +45,25 @@ export default function AlertBanners() {
       {minsLeft !== null && (
         <div className="alert-banner session show" role="alert" aria-live="polite">
           <span aria-hidden="true">⏱</span>
-          <span>Your Xero session expires in {minsLeft} minute{minsLeft !== 1 ? 's' : ''} —</span>
-          <button
+          <span>Session expires in {minsLeft} minute{minsLeft !== 1 ? 's' : ''} —</span>
+          <Button
             type="button"
+            variant="ghost"
+            size="xs"
             onClick={() => doRefreshToken().then(() => toast('Session refreshed', 'success')).catch(() => toast('Session refresh failed — please reconnect.', 'error'))}
-            className="btn btn-ghost"
-            style={{ padding: '4px 10px', fontSize: 10, marginLeft: 4 }}
+            className="ml-1"
           >
             Refresh session
-          </button>
+          </Button>
         </div>
       )}
       {updateReady && (
         <div className="alert-banner session show" role="alert" aria-live="polite">
           <span aria-hidden="true">🆕</span>
           <span>A new version is available —</span>
-          <button
-            type="button"
-            onClick={applyUpdate}
-            className="btn btn-ghost"
-            style={{ padding: '4px 10px', fontSize: 10, marginLeft: 4 }}
-          >
+          <Button type="button" variant="ghost" size="xs" onClick={applyUpdate} className="ml-1">
             Reload to update
-          </button>
+          </Button>
         </div>
       )}
     </div>
