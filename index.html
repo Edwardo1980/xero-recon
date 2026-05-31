@@ -562,6 +562,126 @@
     .status-pill span { display: none; }
   }
 
+  /* ── Alert banners (offline / session expiry) ── */
+  .alert-banner {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    padding: 10px 20px;
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    z-index: 8888;
+  }
+  .alert-banner.offline { background: #2a150e; color: #ffaa88; border-bottom: 1px solid rgba(255,112,67,0.3); }
+  .alert-banner.session { background: #231f0a; color: var(--gold); border-bottom: 1px solid rgba(255,201,64,0.3); }
+  .alert-banner.show { display: flex; }
+  body.has-banner .wrap { padding-top: 80px; }
+
+  /* ── Sortable column headers ── */
+  .sort-th {
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.15s;
+  }
+  .sort-th:hover { color: var(--text); }
+  .sort-th:focus-visible { outline: 2px solid var(--accent); border-radius: 2px; }
+  .sort-arrow { font-size: 9px; color: var(--text-muted); }
+  .sort-arrow.active { color: var(--accent); }
+
+  /* ── Table controls (filter + count) ── */
+  .table-controls {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px; flex-wrap: wrap;
+  }
+  .filter-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-pill:hover { border-color: var(--border2); color: var(--text); }
+  .filter-pill.active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  .filter-count { font-size: 10px; color: var(--text-muted); margin-left: 4px; }
+
+  /* ── Expandable account rows ── */
+  .acc-row-toggle { cursor: pointer; }
+  .acc-row-toggle:hover .acc-name { color: var(--accent); }
+  .acc-row-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .acc-chevron { font-size: 9px; color: var(--text-muted); width: 14px; flex-shrink: 0; transition: transform 0.2s; }
+  .acc-chevron.open { transform: rotate(90deg); }
+
+  /* ── Transaction list ── */
+  .tx-list { background: var(--bg); border-top: 1px solid var(--border); }
+  .tx-header {
+    display: grid;
+    grid-template-columns: 36px 1fr 1fr auto auto;
+    gap: 10px;
+    padding: 7px 16px;
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface3);
+  }
+  .tx-item {
+    display: grid;
+    grid-template-columns: 36px 1fr 1fr auto auto;
+    gap: 10px;
+    padding: 10px 16px;
+    font-size: 11px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    transition: background 0.15s;
+  }
+  .tx-item:last-child { border-bottom: none; }
+  .tx-item:hover { background: rgba(255,255,255,0.015); }
+  .tx-badge {
+    font-size: 8px; font-weight: 600;
+    padding: 2px 5px; border-radius: 4px;
+    letter-spacing: 0.05em; text-align: center;
+  }
+  .tx-badge.in  { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(0,229,160,0.2); }
+  .tx-badge.out { background: var(--warn-dim); color: var(--warn); border: 1px solid rgba(255,112,67,0.2); }
+  .tx-contact { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tx-ref { color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; }
+  .tx-date { color: var(--text-muted); font-size: 10px; white-space: nowrap; }
+  .tx-amount { text-align: right; white-space: nowrap; font-weight: 500; }
+  .tx-more {
+    padding: 9px 16px; font-size: 10px; color: var(--text-muted);
+    text-align: center; font-style: italic;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── Totals row ── */
+  .table-total {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 12px;
+    padding: 11px 16px;
+    border-top: 2px solid var(--border2);
+    background: var(--surface3);
+    align-items: center;
+    font-size: 11px;
+  }
+
+  @media (max-width: 600px) {
+    .tx-header, .tx-item { grid-template-columns: 36px 1fr auto; }
+    .tx-ref, .tx-date { display: none; }
+  }
+
   /* ── Reduced motion ── */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -573,6 +693,17 @@
 </style>
 </head>
 <body>
+<!-- Fixed alert banners -->
+<div id="bannerOffline" class="alert-banner offline" role="alert" aria-live="assertive">
+  <span aria-hidden="true">⚡</span>
+  No internet connection — showing cached data.
+</div>
+<div id="bannerSession" class="alert-banner session" role="alert" aria-live="polite">
+  <span aria-hidden="true">⏱</span>
+  <span id="bannerSessionText">Your session expires soon.</span>
+  <button onclick="doRefreshToken().then(()=>hideBanner('session')).catch(()=>{})" class="btn btn-ghost" style="padding:4px 10px;font-size:10px;margin-left:4px;">Refresh session</button>
+</div>
+
 <div class="wrap" role="main">
 
   <!-- Screen reader live region -->
@@ -1088,12 +1219,13 @@ async function fetchReconciliationData() {
   const accountSummary = accounts.map(acc => {
     const accTxs = txs.filter(t => t.BankAccount?.AccountID === acc.AccountID);
     return {
-      id:       acc.AccountID,
-      name:     acc.Name,
-      code:     acc.Code || '—',
-      currency: acc.CurrencyCode || 'AUD',
-      count:    accTxs.length,
-      total:    accTxs.reduce((s, t) => s + (t.Total || 0), 0)
+      id:           acc.AccountID,
+      name:         acc.Name,
+      code:         acc.Code || '—',
+      currency:     acc.CurrencyCode || 'AUD',
+      count:        accTxs.length,
+      total:        accTxs.reduce((s, t) => s + (t.Total || 0), 0),
+      transactions: accTxs
     };
   });
 
@@ -1121,6 +1253,21 @@ function exportCSV(data) {
     rows.push([acc.name, acc.code, acc.currency, acc.count, acc.total.toFixed(2)]);
   });
   rows.push([]);
+  rows.push(['', 'Transaction Detail']);
+  rows.push(['Account', 'Type', 'Contact', 'Reference', 'Date', 'Amount']);
+  data.accounts.forEach(acc => {
+    (acc.transactions || []).forEach(tx => {
+      rows.push([
+        acc.name,
+        tx.Type,
+        tx.Contact?.Name || '',
+        tx.Reference || '',
+        parseXeroDate(tx.Date),
+        (tx.Total || 0).toFixed(2)
+      ]);
+    });
+  });
+  rows.push([]);
   rows.push(['Export date', new Date().toISOString(), '', 'Organisation', data.tenantName]);
 
   const csv = rows.map(r =>
@@ -1137,6 +1284,98 @@ function exportCSV(data) {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   toast('CSV exported', 'success');
+}
+
+// ── Date utils ───────────────────────────────────────────────
+function parseXeroDate(xeroDate) {
+  if (!xeroDate) return '—';
+  const m = String(xeroDate).match(/\/Date\((-?\d+)/);
+  if (m) return new Date(parseInt(m[1])).toLocaleDateString(undefined, { day:'numeric', month:'short', year:'2-digit' });
+  return xeroDate;
+}
+
+// ── Sort / filter state ───────────────────────────────────────
+let _sortCol       = 'pending';
+let _sortDir       = 'desc';
+let _filterPending = false;
+const _expandedAccounts = new Set();
+
+function sortAndFilter(accounts) {
+  let list = _filterPending ? accounts.filter(a => a.count > 0) : [...accounts];
+  list.sort((a, b) => {
+    let va, vb;
+    if (_sortCol === 'name')    { va = a.name.toLowerCase();  vb = b.name.toLowerCase(); }
+    else if (_sortCol === 'pending') { va = a.count;          vb = b.count; }
+    else                        { va = Math.abs(a.total);     vb = Math.abs(b.total); }
+    if (va < vb) return _sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return _sortDir === 'asc' ?  1 : -1;
+    return 0;
+  });
+  return list;
+}
+
+function setSort(col) {
+  if (_sortCol === col) _sortDir = _sortDir === 'asc' ? 'desc' : 'asc';
+  else { _sortCol = col; _sortDir = col === 'name' ? 'asc' : 'desc'; }
+  if (_cachedData) renderDashboard(_cachedData);
+}
+
+function setFilterPending(val) {
+  _filterPending = val;
+  if (_cachedData) renderDashboard(_cachedData);
+}
+
+function toggleAccount(accId) {
+  if (_expandedAccounts.has(accId)) _expandedAccounts.delete(accId);
+  else _expandedAccounts.add(accId);
+  const txRow  = document.getElementById(`tx-${accId}`);
+  const chev   = document.getElementById(`chev-${accId}`);
+  if (!txRow) return;
+  const open = _expandedAccounts.has(accId);
+  txRow.style.display = open ? 'block' : 'none';
+  if (chev) chev.className = 'acc-chevron' + (open ? ' open' : '');
+  const row = document.getElementById(`row-${accId}`);
+  if (row) row.setAttribute('aria-expanded', open);
+}
+
+// ── Session watcher ───────────────────────────────────────────
+let _sessionCheckID = null;
+
+function startSessionWatcher() {
+  if (_sessionCheckID) clearInterval(_sessionCheckID);
+  checkSessionExpiry();
+  _sessionCheckID = setInterval(checkSessionExpiry, 60000);
+}
+
+function stopSessionWatcher() {
+  if (_sessionCheckID) { clearInterval(_sessionCheckID); _sessionCheckID = null; }
+  hideBanner('session');
+}
+
+function checkSessionExpiry() {
+  const exp = store.get('expiresAt');
+  if (!exp || !store.get('accessToken')) { hideBanner('session'); return; }
+  const minsLeft = Math.round((exp - Date.now()) / 60000);
+  if (minsLeft > 0 && minsLeft <= 10) {
+    $('bannerSessionText').textContent =
+      `Your Xero session expires in ${minsLeft} minute${minsLeft !== 1 ? 's' : ''} —`;
+    showBanner('session');
+  } else {
+    hideBanner('session');
+  }
+}
+
+function showBanner(type) {
+  $(`banner${type === 'session' ? 'Session' : 'Offline'}`).classList.add('show');
+  document.body.classList.add('has-banner');
+}
+
+function hideBanner(type) {
+  $(`banner${type === 'session' ? 'Session' : 'Offline'}`).classList.remove('show');
+  if (!$('bannerOffline').classList.contains('show') &&
+      !$('bannerSession').classList.contains('show')) {
+    document.body.classList.remove('has-banner');
+  }
 }
 
 // ── Sync timer ────────────────────────────────────────────────
@@ -1177,62 +1416,174 @@ function showSkeletonDashboard() {
 
 // ── Render dashboard ──────────────────────────────────────────
 function renderDashboard(data) {
-  const allClear = data.totalUnreconciled === 0;
+  const allClear       = data.totalUnreconciled === 0;
+  const displayAccounts = sortAndFilter(data.accounts);
+  const pendingCount   = data.accounts.filter(a => a.count > 0).length;
 
+  // ── Stats ──
   const statsHTML = `
     <div class="section-title">Overview — ${esc(data.tenantName)}</div>
     <div class="stats-row" role="list" aria-label="Summary statistics">
       <div class="stat ${allClear ? 'green' : 'warn'}" role="listitem">
         <div class="stat-val">${data.totalUnreconciled}</div>
-        <div class="stat-lbl">Unreconciled</div>
+        <div class="stat-lbl">Unreconciled txns</div>
       </div>
       <div class="stat blue" role="listitem">
         <div class="stat-val" style="font-size:20px;">${fmt(data.totalValue, data.currency)}</div>
         <div class="stat-lbl">Outstanding value</div>
       </div>
-      <div class="stat green" role="listitem">
-        <div class="stat-val">${data.accounts.length}</div>
-        <div class="stat-lbl">Bank accounts</div>
+      <div class="stat ${pendingCount > 0 ? 'warn' : 'green'}" role="listitem">
+        <div class="stat-val">${pendingCount}</div>
+        <div class="stat-lbl">Accounts pending</div>
       </div>
     </div>
   `;
 
-  const tableRows = data.accounts.length
-    ? data.accounts.map(acc => `
-      <div class="table-row" role="row">
-        <div role="cell">
-          <div class="acc-name">${esc(acc.name)}</div>
-          <div class="acc-code">${esc(acc.code)}</div>
-        </div>
-        <div class="col-code" role="cell" style="font-size:11px;color:var(--text-dim);">${esc(acc.currency)}</div>
-        <div role="cell">
-          <span class="tag ${acc.count === 0 ? 'clear' : 'pending'}"
-            aria-label="${acc.count === 0 ? 'Reconciled' : acc.count + ' pending'}">
-            ${acc.count === 0 ? '✓' : acc.count}
+  // ── Sort helpers ──
+  const sortIcon = col => {
+    if (_sortCol !== col) return `<span class="sort-arrow" aria-hidden="true">⇅</span>`;
+    return `<span class="sort-arrow active" aria-hidden="true">${_sortDir === 'asc' ? '↑' : '↓'}</span>`;
+  };
+  const ariaSortAttr = col =>
+    _sortCol === col ? (_sortDir === 'asc' ? 'ascending' : 'descending') : 'none';
+
+  // ── Filter controls ──
+  const controlsHTML = `
+    <div class="table-controls">
+      <button class="filter-pill ${_filterPending ? 'active' : ''}"
+        onclick="setFilterPending(${!_filterPending})"
+        aria-pressed="${_filterPending}">
+        ${_filterPending ? '● Pending only' : '○ All accounts'}
+      </button>
+      ${pendingCount > 0
+        ? `<span class="filter-count">${pendingCount} account${pendingCount !== 1 ? 's' : ''} with pending items</span>`
+        : ''}
+    </div>
+  `;
+
+  // ── Transaction list for an account ──
+  function txListHTML(acc) {
+    if (!acc.transactions || !acc.transactions.length) return '';
+    const isOpen = _expandedAccounts.has(acc.id);
+    const MAX_SHOW = 25;
+    const shown = acc.transactions.slice(0, MAX_SHOW);
+    const txRows = shown.map(tx => {
+      const isIn = tx.Type === 'RECEIVE' || tx.Type === 'RECEIVECREDIT';
+      return `
+        <div class="tx-item">
+          <span class="tx-badge ${isIn ? 'in' : 'out'}" aria-label="${isIn ? 'Money in' : 'Money out'}">${isIn ? 'IN' : 'OUT'}</span>
+          <span class="tx-contact">${esc(tx.Contact?.Name || '—')}</span>
+          <span class="tx-ref">${esc(tx.Reference || tx.LineItems?.[0]?.Description || '—')}</span>
+          <span class="tx-date">${parseXeroDate(tx.Date)}</span>
+          <span class="tx-amount" style="color:${isIn ? 'var(--accent)' : 'var(--warn)'};">
+            ${isIn ? '+' : '-'}${fmt(Math.abs(tx.Total || 0), acc.currency)}
           </span>
+        </div>`;
+    }).join('');
+
+    const moreRow = acc.count > MAX_SHOW
+      ? `<div class="tx-more">Showing ${MAX_SHOW} of ${acc.count} transactions — open Xero to see all</div>`
+      : '';
+
+    return `
+      <div id="tx-${acc.id}" class="tx-list" style="display:${isOpen ? 'block' : 'none'};">
+        <div class="tx-header">
+          <div></div><div>Contact</div><div>Reference</div><div>Date</div><div style="text-align:right;">Amount</div>
         </div>
-        <div class="amount" role="cell" style="color:${acc.count > 0 ? 'var(--warn)' : 'var(--accent)'};">
-          ${fmt(acc.total, acc.currency)}
-        </div>
-      </div>
-    `).join('')
-    : `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">
-         No bank accounts found. Make sure your Xero organisation has active bank accounts.
+        ${txRows}${moreRow}
+      </div>`;
+  }
+
+  // ── Account rows ──
+  const tableRows = displayAccounts.length
+    ? displayAccounts.map(acc => {
+        const hasTxs   = acc.count > 0;
+        const isOpen   = _expandedAccounts.has(acc.id);
+        const rowAttrs = hasTxs
+          ? `id="row-${acc.id}" class="table-row acc-row-toggle" role="button" tabindex="0"
+             aria-expanded="${isOpen}" aria-label="Toggle transactions for ${esc(acc.name)}"
+             onclick="toggleAccount('${acc.id}')"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleAccount('${acc.id}')}"`
+          : `class="table-row"`;
+        return `
+          <div ${rowAttrs}>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span id="chev-${acc.id}" class="acc-chevron${isOpen ? ' open' : ''}" aria-hidden="true">
+                ${hasTxs ? '▶' : ''}
+              </span>
+              <div>
+                <div class="acc-name">${esc(acc.name)}</div>
+                <div class="acc-code">${esc(acc.code)}</div>
+              </div>
+            </div>
+            <div class="col-code" style="font-size:11px;color:var(--text-dim);">${esc(acc.currency)}</div>
+            <div>
+              <span class="tag ${acc.count === 0 ? 'clear' : 'pending'}"
+                aria-label="${acc.count === 0 ? 'Reconciled' : acc.count + ' pending'}">
+                ${acc.count === 0 ? '✓' : acc.count}
+              </span>
+            </div>
+            <div class="amount" style="color:${acc.count > 0 ? 'var(--warn)' : 'var(--accent)'};">
+              ${fmt(acc.total, acc.currency)}
+            </div>
+          </div>
+          ${txListHTML(acc)}`;
+      }).join('')
+    : `<div style="padding:28px;text-align:center;color:var(--text-muted);font-size:12px;">
+        ${_filterPending
+          ? `All accounts are reconciled — nothing pending.
+             <div style="margin-top:10px;">
+               <button class="filter-pill" onclick="setFilterPending(false)">Show all accounts</button>
+             </div>`
+          : 'No bank accounts found. Make sure your Xero organisation has active bank accounts.'}
        </div>`;
+
+  // ── Totals row ──
+  const totalPending = displayAccounts.reduce((s, a) => s + a.count, 0);
+  const totalAmt     = displayAccounts.reduce((s, a) => s + a.total, 0);
+  const totalsRow = displayAccounts.length > 1 ? `
+    <div class="table-total">
+      <div style="color:var(--text-dim);">Total (${displayAccounts.length} accounts)</div>
+      <div class="col-code"></div>
+      <div>
+        <span class="tag ${totalPending === 0 ? 'clear' : 'pending'}"
+          aria-label="${totalPending === 0 ? 'All reconciled' : totalPending + ' pending'}">
+          ${totalPending === 0 ? '✓' : totalPending}
+        </span>
+      </div>
+      <div class="amount" style="color:${totalPending > 0 ? 'var(--warn)' : 'var(--accent)'};">
+        ${fmt(totalAmt, data.currency)}
+      </div>
+    </div>` : '';
 
   const tableHTML = `
     <div class="section-title">Bank Accounts</div>
+    ${controlsHTML}
     <div class="table-wrap" role="table" aria-label="Bank account reconciliation status">
       <div class="table-head" role="row">
-        <div role="columnheader">Account</div>
+        <div role="columnheader">
+          <span class="sort-th" onclick="setSort('name')" tabindex="0"
+            onkeydown="if(event.key==='Enter')setSort('name')"
+            aria-sort="${ariaSortAttr('name')}">Account ${sortIcon('name')}</span>
+        </div>
         <div class="col-code" role="columnheader">Currency</div>
-        <div role="columnheader">Pending</div>
-        <div style="text-align:right;" role="columnheader">Amount</div>
+        <div role="columnheader">
+          <span class="sort-th" onclick="setSort('pending')" tabindex="0"
+            onkeydown="if(event.key==='Enter')setSort('pending')"
+            aria-sort="${ariaSortAttr('pending')}">Pending ${sortIcon('pending')}</span>
+        </div>
+        <div style="text-align:right;" role="columnheader">
+          <span class="sort-th" onclick="setSort('amount')" tabindex="0"
+            onkeydown="if(event.key==='Enter')setSort('amount')"
+            aria-sort="${ariaSortAttr('amount')}">Amount ${sortIcon('amount')}</span>
+        </div>
       </div>
       ${tableRows}
+      ${totalsRow}
     </div>
   `;
 
+  // ── Tip ──
   const tipHTML = allClear
     ? `<div class="notice success" role="status">
          <span aria-hidden="true">🎉</span>
@@ -1240,22 +1591,19 @@ function renderDashboard(data) {
        </div>`
     : `<div class="notice info" role="note">
          <span aria-hidden="true">💡</span>
-         <div>
-           To reconcile: open <strong>Xero → Accounting → Bank Accounts</strong>, then click <strong>Reconcile</strong>
-           next to each account with pending items.
-           You have <strong>${data.totalUnreconciled} transaction${data.totalUnreconciled !== 1 ? 's' : ''}</strong> waiting to be matched.
-         </div>
+         <div>To reconcile: open <strong>Xero → Accounting → Bank Accounts</strong>, click <strong>Reconcile</strong>
+           next to each pending account. Click any account row above to expand individual transactions.</div>
        </div>`;
 
   $('dashContent').setAttribute('aria-busy', 'false');
   $('dashContent').innerHTML = statsHTML + tableHTML + tipHTML;
 
-  // Org switcher badge
+  // Org badge
   const conns = store.get('allConnections') || [];
   const orgBadge = $('orgBadge');
   if (conns.length > 1) {
-    orgBadge.textContent = esc(data.tenantName) + ' ▾';
-    orgBadge.setAttribute('aria-label', `Current organisation: ${data.tenantName}. Click to switch.`);
+    orgBadge.textContent = data.tenantName + ' ▾';
+    orgBadge.setAttribute('aria-label', `Current org: ${data.tenantName}. Click to switch.`);
     orgBadge.style.display = 'inline-block';
   } else {
     orgBadge.style.display = 'none';
@@ -1289,12 +1637,14 @@ async function loadDashboard(force = false) {
     _cacheTime  = Date.now();
     setStatus(true, data.tenantName);
     renderDashboard(data);
+    startSessionWatcher();
   } catch (e) {
     const msg = translateError(e.message);
     if (e.message === 'NOT_AUTHENTICATED') {
       store.clear();
       _cachedData = null;
       setStatus(false, 'Not connected');
+      stopSessionWatcher();
       showScreen('connect');
       toast('Your session expired — please reconnect.', 'error');
     } else {
@@ -1371,6 +1721,13 @@ $('btnSaveSetup').addEventListener('click', async () => {
     $('inputClientId').focus();
     return;
   }
+  // Xero Client IDs are UUIDs
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clientId)) {
+    $('setupError').innerHTML = errBox('Client ID doesn\'t look right — it should be a UUID like <code>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code>. Double-check the Xero developer portal.');
+    $('setupError').style.display = 'block';
+    $('inputClientId').focus();
+    return;
+  }
 
   store.setCred('clientId', clientId);
   if (clientSecret) store.setCred('clientSecret', clientSecret);
@@ -1437,8 +1794,12 @@ $('btnDisconnect').addEventListener('click', () => {
   const btn = $('btnDisconnect');
   if (btn.dataset.confirming === 'true') {
     store.clearAll();
+    _cachedData = null;
     setStatus(false, 'Not connected');
     if (_syncTimerID) clearInterval(_syncTimerID);
+    stopSessionWatcher();
+    hideBanner('session');
+    hideBanner('offline');
     showScreen('connect');
     toast('Disconnected from Xero', 'info');
     btn.dataset.confirming = 'false';
@@ -1491,6 +1852,14 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     document.querySelectorAll('.toast').forEach(t => t.click());
   }
+});
+
+// ── Online / offline detection ────────────────────────────────
+window.addEventListener('offline', () => showBanner('offline'));
+window.addEventListener('online',  () => {
+  hideBanner('offline');
+  toast('Back online', 'success');
+  if (store.get('accessToken') && !cacheIsValid()) loadDashboard(true);
 });
 
 // ── Auto-refresh on tab focus when data is stale ──────────────
