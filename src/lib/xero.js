@@ -15,20 +15,6 @@ export async function loadConnections() {
   return conns;
 }
 
-export async function getTenantId() {
-  const { tenantId } = useAuthStore.getState();
-  if (tenantId) return tenantId;
-
-  const conns = await loadConnections();
-  // If single org, auto-select
-  if (conns.length === 1) {
-    useAuthStore.getState().setTenant(conns[0].tenantId, conns[0].tenantName);
-    return conns[0].tenantId;
-  }
-  // Multiple orgs — caller must pick (returns null to trigger org picker flow)
-  return null;
-}
-
 // ── Core API call ─────────────────────────────────────────────
 const STATUS_MESSAGES = {
   403: (path) => `Permission denied on ${path}. Check your app scopes in the Xero developer portal.`,

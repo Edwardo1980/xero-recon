@@ -10,7 +10,6 @@ import AccountsTable from '../components/dashboard/AccountsTable.jsx';
 import HelpFaq from '../components/dashboard/HelpFaq.jsx';
 import SkeletonDashboard from '../components/ui/SkeletonDashboard.jsx';
 import Notice from '../components/ui/Notice.jsx';
-import { fetchReconciliationData } from '../lib/xero.js';
 
 function exportCSV(data) {
   const rows = [['Account', 'Code', 'Currency', 'Pending Transactions', 'Outstanding Amount']];
