@@ -37,7 +37,6 @@
     overflow-x: hidden;
   }
 
-  /* ── Background grid ── */
   body::before {
     content: '';
     position: fixed;
@@ -56,6 +55,13 @@
     max-width: 860px;
     margin: 0 auto;
     padding: 32px 20px 60px;
+  }
+
+  /* ── Screen reader only ── */
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border: 0;
   }
 
   /* ── Header ── */
@@ -221,6 +227,7 @@
     cursor: pointer;
     transition: all 0.2s;
     text-decoration: none;
+    position: relative;
   }
 
   .btn-primary {
@@ -228,15 +235,15 @@
     color: #080b10;
     width: 100%;
   }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,229,160,0.25); }
-  .btn-primary:active { transform: translateY(0); }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,229,160,0.25); }
+  .btn-primary:active:not(:disabled) { transform: translateY(0); }
 
   .btn-secondary {
     background: var(--surface2);
     color: var(--text);
     border: 1px solid var(--border);
   }
-  .btn-secondary:hover { border-color: var(--border2); background: var(--surface3); }
+  .btn-secondary:hover:not(:disabled) { border-color: var(--border2); background: var(--surface3); }
 
   .btn-ghost {
     background: transparent;
@@ -245,9 +252,26 @@
     font-size: 11px;
     padding: 8px 14px;
   }
-  .btn-ghost:hover { color: var(--warn); border-color: rgba(255,112,67,0.3); }
+  .btn-ghost:hover:not(:disabled) { color: var(--warn); border-color: rgba(255,112,67,0.3); }
 
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  .btn-loading::after {
+    content: '';
+    display: inline-block;
+    width: 12px; height: 12px;
+    border: 2px solid rgba(0,0,0,0.3);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-left: 6px;
+  }
+  .btn-primary.btn-loading::after { border-color: rgba(0,0,0,0.25); border-top-color: #080b10; }
 
   .btn-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
 
@@ -386,18 +410,89 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── Token display ── */
-  .token-box {
-    background: var(--surface3);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius-sm);
-    padding: 12px 14px;
-    font-size: 11px;
-    color: var(--accent);
-    word-break: break-all;
-    line-height: 1.5;
-    margin-bottom: 12px;
+  /* ── Skeleton loading ── */
+  @keyframes shimmer {
+    0% { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
   }
+  .skeleton-box {
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%);
+    background-size: 800px 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-sm);
+  }
+  .skeleton-stat {
+    height: 82px;
+    border-radius: var(--radius-sm);
+  }
+  .skeleton-row {
+    height: 52px;
+    border-bottom: 1px solid var(--border);
+  }
+  .skeleton-row:last-child { border-bottom: none; }
+
+  /* ── Toast notifications ── */
+  .toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+  }
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    pointer-events: all;
+    max-width: 340px;
+    animation: toastIn 0.25s ease;
+    border: 1px solid transparent;
+  }
+  .toast.success { background: #0d2a1f; border-color: rgba(0,229,160,0.3); color: var(--accent); }
+  .toast.error   { background: #2a150e; border-color: rgba(255,112,67,0.3); color: #ffaa88; }
+  .toast.info    { background: #0e1e36; border-color: rgba(61,158,255,0.3); color: #7bbfff; }
+  .toast-out { animation: toastOut 0.25s ease forwards; }
+  @keyframes toastIn  { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes toastOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(12px); } }
+
+  /* ── Org picker ── */
+  .org-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .org-item {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .org-item:hover { border-color: var(--accent); background: var(--surface3); }
+  .org-item.selected { border-color: var(--accent); background: var(--accent-dim); }
+  .org-item-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--surface3), var(--border2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .org-item-name { font-size: 13px; color: var(--text); font-weight: 500; }
+  .org-item-id { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .org-item-check {
+    margin-left: auto;
+    color: var(--accent);
+    font-size: 16px;
+    opacity: 0;
+  }
+  .org-item.selected .org-item-check { opacity: 1; }
 
   /* ── Section title ── */
   .section-title {
@@ -410,20 +505,32 @@
   }
   .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  /* ── Footer ── */
+  /* ── Dashboard footer ── */
   .dash-footer {
     display: flex; align-items: center; justify-content: space-between;
     padding-top: 16px;
     border-top: 1px solid var(--border);
     margin-top: 8px;
+    flex-wrap: wrap;
+    gap: 8px;
   }
   .last-sync { font-size: 10px; color: var(--text-muted); }
+  .org-badge {
+    font-size: 10px;
+    color: var(--text-dim);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .org-badge:hover { border-color: var(--border2); color: var(--text); }
 
   /* ── Screens ── */
   .screen { display: none; }
   .screen.active { display: block; }
 
-  /* ── Fade in ── */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
@@ -431,58 +538,77 @@
   .screen.active { animation: fadeUp 0.3s ease; }
 
   /* ── Responsive ── */
-  @media (max-width: 560px) {
+  @media (max-width: 600px) {
     .stats-row { grid-template-columns: 1fr 1fr; }
     .table-head, .table-row { grid-template-columns: 1fr auto auto; }
     .table-head .col-code, .table-row .col-code { display: none; }
+    .site-title h1 { font-size: 18px; }
+    .toast-container { bottom: 16px; right: 16px; left: 16px; }
+    .toast { max-width: 100%; }
+  }
+  @media (max-width: 400px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .status-pill span { display: none; }
+  }
+
+  /* ── Reduced motion ── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap" role="main">
+
+  <!-- Screen reader live region -->
+  <div id="ariaAnnounce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
   <!-- Header -->
-  <div class="site-header">
-    <div class="logo">🔄</div>
+  <header class="site-header">
+    <div class="logo" role="img" aria-label="Xero Reconciliation">🔄</div>
     <div class="site-title">
       <h1>Xero Reconciliation</h1>
       <p>Official OAuth2 API · No password stored</p>
     </div>
-    <div class="status-pill" id="statusPill">
-      <div class="dot"></div>
+    <div class="status-pill" id="statusPill" role="status" aria-live="polite">
+      <div class="dot" aria-hidden="true"></div>
       <span id="statusText">Not connected</span>
     </div>
-  </div>
+  </header>
 
   <!-- ══ SCREEN: Setup ══ -->
-  <div class="screen active" id="screen-setup">
+  <div class="screen active" id="screen-setup" role="region" aria-label="Initial setup">
     <div class="card">
-      <div class="card-glow"></div>
-      <h2>👋 Welcome — one-time setup</h2>
+      <div class="card-glow" aria-hidden="true"></div>
+      <h2>Welcome — one-time setup</h2>
       <p>This tool connects to Xero using their official API. You need a free Xero developer app to get started. Takes about 3 minutes.</p>
 
-      <div class="steps">
-        <div class="step">
-          <div class="step-n">1</div>
+      <div class="steps" role="list" aria-label="Setup steps">
+        <div class="step" role="listitem">
+          <div class="step-n" aria-hidden="true">1</div>
           <div class="step-body">
-            Go to <a href="https://developer.xero.com/app/manage" target="_blank">developer.xero.com/app/manage</a> and sign in with your Xero account. Click <strong>New App</strong>.
+            Go to <a href="https://developer.xero.com/app/manage" target="_blank" rel="noopener noreferrer">developer.xero.com/app/manage</a> and sign in with your Xero account. Click <strong>New App</strong>.
           </div>
         </div>
-        <div class="step">
-          <div class="step-n">2</div>
+        <div class="step" role="listitem">
+          <div class="step-n" aria-hidden="true">2</div>
           <div class="step-body">
             Set <strong>Integration type</strong> to <strong>Web app</strong>. For the <strong>Redirect URI</strong>, enter exactly:
             <code id="redirectUriDisplay"></code>
           </div>
         </div>
-        <div class="step">
-          <div class="step-n">3</div>
+        <div class="step" role="listitem">
+          <div class="step-n" aria-hidden="true">3</div>
           <div class="step-body">
             After creating the app, copy your <strong>Client ID</strong> and <strong>Client Secret</strong> from the app dashboard.
           </div>
         </div>
-        <div class="step">
-          <div class="step-n">4</div>
+        <div class="step" role="listitem">
+          <div class="step-n" aria-hidden="true">4</div>
           <div class="step-body">
             Paste them below and click <strong>Save & Connect</strong>.
           </div>
@@ -490,49 +616,60 @@
       </div>
 
       <div class="field">
-        <label>Client ID</label>
-        <input type="text" id="inputClientId" placeholder="Paste your Xero Client ID…">
+        <label for="inputClientId">Client ID</label>
+        <input type="text" id="inputClientId" placeholder="Paste your Xero Client ID…" autocomplete="off" spellcheck="false">
       </div>
       <div class="field">
-        <label>Client Secret</label>
-        <input type="password" id="inputClientSecret" placeholder="Paste your Xero Client Secret…">
+        <label for="inputClientSecret">Client Secret</label>
+        <input type="password" id="inputClientSecret" placeholder="Paste your Xero Client Secret…" autocomplete="off">
       </div>
 
-      <div id="setupError" style="display:none; margin-bottom:12px;"></div>
-      <button class="btn btn-primary" id="btnSaveSetup">Save & Connect to Xero →</button>
+      <div id="setupError" role="alert" aria-live="assertive" style="display:none; margin-bottom:12px;"></div>
+      <button class="btn btn-primary" id="btnSaveSetup">Save &amp; Connect to Xero →</button>
+    </div>
+  </div>
+
+  <!-- ══ SCREEN: Org picker ══ -->
+  <div class="screen" id="screen-orgpicker" role="region" aria-label="Select organisation">
+    <div class="card">
+      <div class="card-glow" aria-hidden="true"></div>
+      <h2>Select Organisation</h2>
+      <p>Your Xero account has access to multiple organisations. Select the one you want to reconcile.</p>
+      <div class="org-list" id="orgList" role="listbox" aria-label="Xero organisations"></div>
+      <button class="btn btn-primary" id="btnSelectOrg">Continue →</button>
     </div>
   </div>
 
   <!-- ══ SCREEN: Auth callback ══ -->
-  <div class="screen" id="screen-callback">
+  <div class="screen" id="screen-callback" role="region" aria-label="Complete Xero connection">
     <div class="card">
-      <div class="card-glow"></div>
-      <h2>🔐 Complete Connection</h2>
+      <div class="card-glow" aria-hidden="true"></div>
+      <h2>Complete Connection</h2>
       <p>Xero has redirected you back. Paste the full URL from your browser address bar below to complete the connection.</p>
 
-      <div class="notice info">
-        <span>ℹ️</span>
+      <div class="notice info" role="note">
+        <span aria-hidden="true">ℹ️</span>
         <div>After clicking "Connect with Xero", your browser will redirect to a Xero login page. After authorising, you'll be redirected back here with a code in the URL. Copy that full URL and paste it below.</div>
       </div>
 
       <div class="field">
-        <label>Full Redirect URL from browser</label>
-        <input type="text" id="inputCallbackUrl" placeholder="https://yoursite.com/callback?code=…&state=…">
+        <label for="inputCallbackUrl">Full Redirect URL from browser</label>
+        <input type="text" id="inputCallbackUrl" placeholder="https://yoursite.com/callback?code=…&state=…" autocomplete="off" spellcheck="false">
       </div>
-      <div id="callbackError" style="display:none; margin-bottom:12px;"></div>
+      <div id="callbackError" role="alert" aria-live="assertive" style="display:none; margin-bottom:12px;"></div>
       <button class="btn btn-primary" id="btnExchangeToken">Complete Connection →</button>
     </div>
   </div>
 
   <!-- ══ SCREEN: Connect ══ -->
-  <div class="screen" id="screen-connect">
+  <div class="screen" id="screen-connect" role="region" aria-label="Connect to Xero">
     <div class="card">
-      <div class="card-glow"></div>
-      <h2>🏦 Connect to Xero</h2>
+      <div class="card-glow" aria-hidden="true"></div>
+      <h2>Connect to Xero</h2>
       <p>Click below to open Xero's secure login. You'll authorise this app, then be redirected back to complete the connection.</p>
 
-      <div class="notice success">
-        <span>✅</span>
+      <div class="notice success" role="note">
+        <span aria-hidden="true">✅</span>
         <div>Your credentials are saved. OAuth2 PKCE is used — your Xero password is <strong>never</strong> stored or transmitted through this app.</div>
       </div>
 
@@ -540,33 +677,39 @@
       <button class="btn btn-secondary" style="width:100%;" id="btnGoCallback">I've authorised — enter callback URL</button>
 
       <div style="margin-top:12px;">
-        <button class="btn btn-ghost" id="btnResetSetup">⚙ Change credentials</button>
+        <button class="btn btn-ghost" id="btnResetSetup">Change credentials</button>
       </div>
     </div>
   </div>
 
   <!-- ══ SCREEN: Dashboard ══ -->
-  <div class="screen" id="screen-dashboard">
+  <div class="screen" id="screen-dashboard" role="region" aria-label="Reconciliation dashboard">
 
-    <div id="dashContent">
-      <div class="loader"><div class="spinner"></div> Loading reconciliation data…</div>
+    <div id="dashContent" aria-live="polite" aria-busy="true">
+      <div class="loader" role="status"><div class="spinner" aria-hidden="true"></div> Loading reconciliation data…</div>
     </div>
 
     <div class="dash-footer">
-      <span class="last-sync" id="lastSync">—</span>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span class="last-sync" id="lastSync" aria-live="polite">—</span>
+        <button class="org-badge" id="orgBadge" style="display:none;" aria-label="Switch organisation"></button>
+      </div>
       <div class="btn-row">
-        <button class="btn btn-secondary" id="btnRefresh" style="padding:8px 14px;font-size:11px;">↺ Refresh</button>
-        <button class="btn btn-ghost" id="btnDisconnect">Disconnect</button>
+        <button class="btn btn-secondary" id="btnRefresh" style="padding:8px 14px;font-size:11px;" aria-label="Refresh data">↺ Refresh</button>
+        <button class="btn btn-ghost" id="btnDisconnect" aria-label="Disconnect from Xero">Disconnect</button>
       </div>
     </div>
   </div>
 
 </div>
 
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer" aria-label="Notifications"></div>
+
 <script>
 // ══════════════════════════════════════════════════════════════
 //  Xero Reconciliation Assistant
-//  Uses Xero OAuth2 with PKCE — all tokens stored in localStorage
+//  OAuth2 PKCE · Tokens in sessionStorage (cleared on tab close)
 // ══════════════════════════════════════════════════════════════
 
 const XERO_AUTH_URL    = 'https://login.xero.com/identity/connect/authorize';
@@ -575,8 +718,8 @@ const XERO_API_BASE    = 'https://api.xero.com/api.xro/2.0';
 const XERO_CONNECTIONS = 'https://api.xero.com/connections';
 const REDIRECT_URI     = window.location.href.split('?')[0].split('#')[0];
 const SCOPES           = 'openid profile email accounting.transactions accounting.reports.read offline_access';
+const FETCH_TIMEOUT_MS = 15000;
 
-// ── Display redirect URI ──────────────────────────────────────
 document.getElementById('redirectUriDisplay').textContent = REDIRECT_URI;
 
 // ── Utils ─────────────────────────────────────────────────────
@@ -601,6 +744,7 @@ function randString(n=32) {
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   $(`screen-${name}`).classList.add('active');
+  announce(name === 'dashboard' ? 'Dashboard loaded' : '');
 }
 
 function setStatus(connected, label) {
@@ -609,8 +753,18 @@ function setStatus(connected, label) {
   $('statusText').textContent = label;
 }
 
+function announce(msg) {
+  const el = $('ariaAnnounce');
+  el.textContent = '';
+  requestAnimationFrame(() => { el.textContent = msg; });
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 function errBox(msg) {
-  return `<div class="notice warn"><span>⚠</span><div>${msg}</div></div>`;
+  return `<div class="notice warn" role="alert"><span aria-hidden="true">⚠</span><div>${esc(msg)}</div></div>`;
 }
 
 function fmt(n, currency='') {
@@ -619,30 +773,99 @@ function fmt(n, currency='') {
   return `${currency} ${parseFloat(n).toFixed(2)}`;
 }
 
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function translateError(msg) {
+  if (!msg) return 'An unexpected error occurred. Please try again.';
+  if (msg === 'NOT_AUTHENTICATED') return 'Your session has expired. Please reconnect to Xero.';
+  if (msg.includes('State mismatch')) return 'Security check failed. Please start the login process again.';
+  if (msg.includes('401') || msg.includes('Unauthorized')) return 'Your Xero session has expired. Please reconnect.';
+  if (msg.includes('403') || msg.includes('Forbidden')) return 'Permission denied. Make sure your Xero app has the required scopes.';
+  if (msg.includes('429') || msg.includes('Too Many')) return 'Too many requests — Xero has rate limited your app. Please wait a minute before refreshing.';
+  if (msg.includes('503') || msg.includes('502') || msg.includes('500')) return 'Xero is experiencing issues right now. Please try again in a few minutes.';
+  if (msg.includes('timed out')) return 'The request timed out. Please check your internet connection and try again.';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('network')) return 'Network error — please check your internet connection and try again.';
+  if (msg.includes('No Xero organisations')) return 'No Xero organisations found. Make sure your app has access to at least one organisation.';
+  if (msg.includes('Token exchange failed')) return 'Failed to complete the Xero login. Make sure you copied the full redirect URL and try again.';
+  return msg;
 }
 
-// ── Storage ───────────────────────────────────────────────────
+// ── Toast notifications ───────────────────────────────────────
+function toast(msg, type = 'info', duration = 4000) {
+  const icons = { success: '✓', error: '⚠', info: 'ℹ' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.setAttribute('role', 'status');
+  el.innerHTML = `<span aria-hidden="true">${icons[type] || icons.info}</span><span>${esc(msg)}</span>`;
+  $('toastContainer').appendChild(el);
+
+  const remove = () => {
+    el.classList.add('toast-out');
+    el.addEventListener('animationend', () => el.remove(), { once: true });
+  };
+  const timer = setTimeout(remove, duration);
+  el.addEventListener('click', () => { clearTimeout(timer); remove(); });
+}
+
+// ── Button state helper ───────────────────────────────────────
+function setBtnLoading(btn, loading, loadingText) {
+  if (loading) {
+    btn.dataset.originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = loadingText || 'Loading…';
+    btn.classList.add('btn-loading');
+  } else {
+    btn.disabled = false;
+    btn.textContent = btn.dataset.originalText || btn.textContent;
+    btn.classList.remove('btn-loading');
+  }
+}
+
+// ── Storage (credentials in localStorage, tokens in sessionStorage) ──
 const store = {
-  get: k => { try { return JSON.parse(localStorage.getItem('xero_'+k)); } catch { return null; } },
-  set: (k,v) => localStorage.setItem('xero_'+k, JSON.stringify(v)),
-  del: k => localStorage.removeItem('xero_'+k),
-  clear: () => ['clientId','clientSecret','accessToken','refreshToken','expiresAt','tenantId','tenantName','codeVerifier','state']
-    .forEach(k => localStorage.removeItem('xero_'+k))
+  // Credentials persist across sessions
+  getCred: k  => { try { return JSON.parse(localStorage.getItem('xero_cred_'+k)); } catch { return null; } },
+  setCred: (k,v) => localStorage.setItem('xero_cred_'+k, JSON.stringify(v)),
+  delCred: k  => localStorage.removeItem('xero_cred_'+k),
+
+  // Tokens only live for the browser tab session
+  get: k  => { try { return JSON.parse(sessionStorage.getItem('xero_'+k)); } catch { return null; } },
+  set: (k,v) => sessionStorage.setItem('xero_'+k, JSON.stringify(v)),
+  del: k  => sessionStorage.removeItem('xero_'+k),
+
+  clear: () => {
+    ['accessToken','refreshToken','expiresAt','tenantId','tenantName',
+     'allConnections','codeVerifier','state'].forEach(k => sessionStorage.removeItem('xero_'+k));
+  },
+  clearAll: () => {
+    store.clear();
+    ['clientId','clientSecret'].forEach(k => localStorage.removeItem('xero_cred_'+k));
+  }
 };
+
+// ── Fetch with timeout ────────────────────────────────────────
+async function fetchWithTimeout(url, options = {}, ms = FETCH_TIMEOUT_MS) {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { ...options, signal: ctrl.signal });
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error('Request timed out after 15 seconds.');
+    throw e;
+  } finally {
+    clearTimeout(id);
+  }
+}
 
 // ── OAuth ─────────────────────────────────────────────────────
 async function buildAuthURL() {
-  const verifier = randString(43);
+  const verifier  = randString(43);
   const challenge = await sha256(verifier);
-  const state = randString(16);
+  const state     = randString(16);
   store.set('codeVerifier', verifier);
   store.set('state', state);
 
   const params = new URLSearchParams({
     response_type: 'code',
-    client_id: store.get('clientId'),
+    client_id: store.getCred('clientId'),
     redirect_uri: REDIRECT_URI,
     scope: SCOPES,
     state,
@@ -656,26 +879,22 @@ async function exchangeCode(code, returnedState) {
   const savedState = store.get('state');
   if (returnedState !== savedState) throw new Error('State mismatch — possible security issue. Please try again.');
 
-  const verifier = store.get('codeVerifier');
-  const clientId = store.get('clientId');
-  const clientSecret = store.get('clientSecret');
+  const verifier      = store.get('codeVerifier');
+  const clientId      = store.getCred('clientId');
+  const clientSecret  = store.getCred('clientSecret');
 
   const body = new URLSearchParams({
-    grant_type: 'authorization_code',
+    grant_type:    'authorization_code',
     code,
-    redirect_uri: REDIRECT_URI,
-    client_id: clientId,
+    redirect_uri:  REDIRECT_URI,
+    client_id:     clientId,
     code_verifier: verifier
   });
 
   const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+  if (clientSecret) headers['Authorization'] = 'Basic ' + btoa(`${clientId}:${clientSecret}`);
 
-  // Add basic auth if client secret provided
-  if (clientSecret) {
-    headers['Authorization'] = 'Basic ' + btoa(`${clientId}:${clientSecret}`);
-  }
-
-  const resp = await fetch(XERO_TOKEN_URL, { method: 'POST', headers, body });
+  const resp = await fetchWithTimeout(XERO_TOKEN_URL, { method: 'POST', headers, body });
   if (!resp.ok) {
     const text = await resp.text();
     throw new Error(`Token exchange failed (${resp.status}): ${text}`);
@@ -686,75 +905,159 @@ async function exchangeCode(code, returnedState) {
 }
 
 function saveTokens(tokens) {
-  store.set('accessToken', tokens.access_token);
+  store.set('accessToken',  tokens.access_token);
   if (tokens.refresh_token) store.set('refreshToken', tokens.refresh_token);
   store.set('expiresAt', Date.now() + (tokens.expires_in || 1800) * 1000);
 }
 
+let _refreshInFlight = null;
+
 async function getToken() {
-  const token = store.get('accessToken');
+  const token     = store.get('accessToken');
   const expiresAt = store.get('expiresAt');
   if (!token) throw new Error('NOT_AUTHENTICATED');
 
   if (Date.now() > expiresAt - 120000) {
-    return await refreshToken();
+    return await doRefreshToken();
   }
   return token;
 }
 
-async function refreshToken() {
-  const refresh = store.get('refreshToken');
-  if (!refresh) throw new Error('NOT_AUTHENTICATED');
+async function doRefreshToken() {
+  // Deduplicate concurrent refresh calls
+  if (_refreshInFlight) return _refreshInFlight;
 
-  const clientId = store.get('clientId');
-  const clientSecret = store.get('clientSecret');
+  _refreshInFlight = (async () => {
+    const refresh      = store.get('refreshToken');
+    if (!refresh) throw new Error('NOT_AUTHENTICATED');
 
-  const body = new URLSearchParams({
-    grant_type: 'refresh_token',
-    refresh_token: refresh,
-    client_id: clientId
-  });
+    const clientId     = store.getCred('clientId');
+    const clientSecret = store.getCred('clientSecret');
 
-  const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
-  if (clientSecret) headers['Authorization'] = 'Basic ' + btoa(`${clientId}:${clientSecret}`);
+    const body = new URLSearchParams({
+      grant_type:    'refresh_token',
+      refresh_token: refresh,
+      client_id:     clientId
+    });
+    const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+    if (clientSecret) headers['Authorization'] = 'Basic ' + btoa(`${clientId}:${clientSecret}`);
 
-  const resp = await fetch(XERO_TOKEN_URL, { method: 'POST', headers, body });
-  if (!resp.ok) { store.clear(); throw new Error('NOT_AUTHENTICATED'); }
+    const resp = await fetchWithTimeout(XERO_TOKEN_URL, { method: 'POST', headers, body });
+    if (!resp.ok) {
+      store.clear();
+      throw new Error('NOT_AUTHENTICATED');
+    }
+    const tokens = await resp.json();
+    saveTokens(tokens);
+    return tokens.access_token;
+  })().finally(() => { _refreshInFlight = null; });
 
-  const tokens = await resp.json();
-  saveTokens(tokens);
-  return tokens.access_token;
+  return _refreshInFlight;
 }
 
 // ── Xero API ──────────────────────────────────────────────────
-async function getTenantId() {
-  const cached = store.get('tenantId');
-  if (cached) return cached;
-
+async function loadConnections() {
   const token = await getToken();
-  const resp = await fetch(XERO_CONNECTIONS, {
+  const resp = await fetchWithTimeout(XERO_CONNECTIONS, {
     headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
   });
   if (!resp.ok) throw new Error('Could not fetch Xero connections');
   const conns = await resp.json();
   if (!conns.length) throw new Error('No Xero organisations found. Make sure your app has access to at least one organisation.');
+  store.set('allConnections', conns);
+  return conns;
+}
 
-  store.set('tenantId', conns[0].tenantId);
+async function getTenantId() {
+  const cached = store.get('tenantId');
+  if (cached) return cached;
+
+  const conns = await loadConnections();
+
+  // If multiple orgs, show picker
+  if (conns.length > 1) {
+    await showOrgPicker(conns);
+    // showOrgPicker resolves when user picks; tenantId now set
+    return store.get('tenantId');
+  }
+
+  store.set('tenantId',   conns[0].tenantId);
   store.set('tenantName', conns[0].tenantName);
   return conns[0].tenantId;
 }
 
-async function xeroGet(path) {
-  const token = await getToken();
+function showOrgPicker(conns) {
+  return new Promise(resolve => {
+    const list = $('orgList');
+    list.innerHTML = '';
+    let selected = conns[0].tenantId;
+
+    conns.forEach(conn => {
+      const item = document.createElement('div');
+      item.className = 'org-item' + (conn.tenantId === selected ? ' selected' : '');
+      item.setAttribute('role', 'option');
+      item.setAttribute('aria-selected', conn.tenantId === selected ? 'true' : 'false');
+      item.innerHTML = `
+        <div class="org-item-icon" aria-hidden="true">🏢</div>
+        <div>
+          <div class="org-item-name">${esc(conn.tenantName)}</div>
+          <div class="org-item-id">${esc(conn.tenantId)}</div>
+        </div>
+        <span class="org-item-check" aria-hidden="true">✓</span>
+      `;
+      item.addEventListener('click', () => {
+        list.querySelectorAll('.org-item').forEach(el => {
+          el.classList.remove('selected');
+          el.setAttribute('aria-selected', 'false');
+        });
+        item.classList.add('selected');
+        item.setAttribute('aria-selected', 'true');
+        selected = conn.tenantId;
+      });
+      list.appendChild(item);
+    });
+
+    showScreen('orgpicker');
+
+    const onSelect = () => {
+      const conn = conns.find(c => c.tenantId === selected);
+      store.set('tenantId',   conn.tenantId);
+      store.set('tenantName', conn.tenantName);
+      $('btnSelectOrg').removeEventListener('click', onSelect);
+      resolve();
+    };
+    $('btnSelectOrg').addEventListener('click', onSelect);
+  });
+}
+
+async function xeroGet(path, retried = false) {
+  const token    = await getToken();
   const tenantId = await getTenantId();
-  const resp = await fetch(`${XERO_API_BASE}${path}`, {
+  const resp = await fetchWithTimeout(`${XERO_API_BASE}${path}`, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization:    `Bearer ${token}`,
       'Xero-tenant-id': tenantId,
-      Accept: 'application/json'
+      Accept:           'application/json'
     }
   });
-  if (!resp.ok) throw new Error(`Xero API error ${resp.status} on ${path}`);
+
+  if (resp.status === 401 && !retried) {
+    // Token may have been rejected server-side; force refresh and retry once
+    await doRefreshToken();
+    return xeroGet(path, true);
+  }
+
+  if (!resp.ok) {
+    const statusMap = {
+      403: `Permission denied on ${path}. Check your app scopes in the Xero developer portal.`,
+      404: `Xero resource not found: ${path}`,
+      429: 'Xero rate limit reached. Please wait before refreshing.',
+      500: 'Xero internal error. Please try again later.',
+      503: 'Xero is temporarily unavailable. Please try again later.'
+    };
+    throw new Error(statusMap[resp.status] || `Xero API error ${resp.status} on ${path}`);
+  }
+
   return resp.json();
 }
 
@@ -764,29 +1067,64 @@ async function fetchReconciliationData() {
     xeroGet('/Accounts?where=Type%3D%3D%22BANK%22%26%26Status%3D%3D%22ACTIVE%22')
   ]);
 
-  const txs = txResp.BankTransactions || [];
-  const accounts = accResp.Accounts || [];
+  const txs      = txResp.BankTransactions || [];
+  const accounts = accResp.Accounts        || [];
 
   const accountSummary = accounts.map(acc => {
     const accTxs = txs.filter(t => t.BankAccount?.AccountID === acc.AccountID);
     return {
-      id: acc.AccountID,
-      name: acc.Name,
-      code: acc.Code || '—',
+      id:       acc.AccountID,
+      name:     acc.Name,
+      code:     acc.Code || '—',
       currency: acc.CurrencyCode || 'AUD',
-      count: accTxs.length,
-      total: accTxs.reduce((s, t) => s + (t.Total || 0), 0),
-      transactions: accTxs.slice(0, 5)
+      count:    accTxs.length,
+      total:    accTxs.reduce((s, t) => s + (t.Total || 0), 0)
     };
   });
 
   return {
-    tenantName: store.get('tenantName') || 'Your Organisation',
+    tenantName:       store.get('tenantName') || 'Your Organisation',
     totalUnreconciled: txs.length,
-    totalValue: txs.reduce((s, t) => s + Math.abs(t.Total || 0), 0),
-    accounts: accountSummary,
-    currency: accounts[0]?.CurrencyCode || 'AUD'
+    totalValue:        txs.reduce((s, t) => s + Math.abs(t.Total || 0), 0),
+    accounts:          accountSummary,
+    currency:          accounts[0]?.CurrencyCode || 'AUD'
   };
+}
+
+// ── Sync timer ────────────────────────────────────────────────
+let _syncTimestamp  = null;
+let _syncTimerID    = null;
+
+function startSyncTimer() {
+  _syncTimestamp = Date.now();
+  if (_syncTimerID) clearInterval(_syncTimerID);
+  updateSyncLabel();
+  _syncTimerID = setInterval(updateSyncLabel, 15000);
+}
+
+function updateSyncLabel() {
+  if (!_syncTimestamp) return;
+  const secs = Math.floor((Date.now() - _syncTimestamp) / 1000);
+  $('lastSync').textContent = secs < 60
+    ? `Updated ${secs}s ago`
+    : `Updated ${Math.floor(secs / 60)}m ago`;
+}
+
+// ── Skeleton dashboard ────────────────────────────────────────
+function showSkeletonDashboard() {
+  const rows = [1,2,3].map(() =>
+    `<div class="table-row skeleton-row"><div class="skeleton-box" style="width:100%;height:100%;"></div></div>`
+  ).join('');
+
+  $('dashContent').setAttribute('aria-busy', 'true');
+  $('dashContent').innerHTML = `
+    <div class="section-title">Overview</div>
+    <div class="stats-row">
+      ${[1,2,3].map(() => `<div class="skeleton-box skeleton-stat"></div>`).join('')}
+    </div>
+    <div class="section-title">Bank Accounts</div>
+    <div class="table-wrap" style="padding:4px;">${rows}</div>
+  `;
 }
 
 // ── Render dashboard ──────────────────────────────────────────
@@ -795,65 +1133,136 @@ function renderDashboard(data) {
 
   const statsHTML = `
     <div class="section-title">Overview — ${esc(data.tenantName)}</div>
-    <div class="stats-row">
-      <div class="stat ${allClear ? 'green' : 'warn'}">
+    <div class="stats-row" role="list" aria-label="Summary statistics">
+      <div class="stat ${allClear ? 'green' : 'warn'}" role="listitem">
         <div class="stat-val">${data.totalUnreconciled}</div>
         <div class="stat-lbl">Unreconciled</div>
       </div>
-      <div class="stat blue">
+      <div class="stat blue" role="listitem">
         <div class="stat-val" style="font-size:20px;">${fmt(data.totalValue, data.currency)}</div>
-        <div class="stat-lbl">Outstanding</div>
+        <div class="stat-lbl">Outstanding value</div>
       </div>
-      <div class="stat green">
+      <div class="stat green" role="listitem">
         <div class="stat-val">${data.accounts.length}</div>
-        <div class="stat-lbl">Bank Accounts</div>
+        <div class="stat-lbl">Bank accounts</div>
       </div>
     </div>
   `;
 
-  const tableRows = data.accounts.map(acc => `
-    <div class="table-row">
-      <div>
-        <div class="acc-name">${esc(acc.name)}</div>
-        <div class="acc-code">${esc(acc.code)}</div>
+  const tableRows = data.accounts.length
+    ? data.accounts.map(acc => `
+      <div class="table-row" role="row">
+        <div role="cell">
+          <div class="acc-name">${esc(acc.name)}</div>
+          <div class="acc-code">${esc(acc.code)}</div>
+        </div>
+        <div class="col-code" role="cell" style="font-size:11px;color:var(--text-dim);">${esc(acc.currency)}</div>
+        <div role="cell">
+          <span class="tag ${acc.count === 0 ? 'clear' : 'pending'}"
+            aria-label="${acc.count === 0 ? 'Reconciled' : acc.count + ' pending'}">
+            ${acc.count === 0 ? '✓' : acc.count}
+          </span>
+        </div>
+        <div class="amount" role="cell" style="color:${acc.count > 0 ? 'var(--warn)' : 'var(--accent)'};">
+          ${fmt(acc.total, acc.currency)}
+        </div>
       </div>
-      <div class="col-code" style="font-size:11px;color:var(--text-dim);">${esc(acc.currency)}</div>
-      <div><span class="tag ${acc.count === 0 ? 'clear' : 'pending'}">${acc.count === 0 ? '✓' : acc.count}</span></div>
-      <div class="amount" style="color:${acc.count > 0 ? 'var(--warn)' : 'var(--accent)'};">${fmt(acc.total, acc.currency)}</div>
-    </div>
-  `).join('');
+    `).join('')
+    : `<div style="padding:24px;text-align:center;color:var(--text-muted);font-size:12px;">
+         No bank accounts found. Make sure your Xero organisation has active bank accounts.
+       </div>`;
 
   const tableHTML = `
     <div class="section-title">Bank Accounts</div>
-    <div class="table-wrap">
-      <div class="table-head">
-        <div>Account</div>
-        <div class="col-code">Currency</div>
-        <div>Pending</div>
-        <div style="text-align:right;">Amount</div>
+    <div class="table-wrap" role="table" aria-label="Bank account reconciliation status">
+      <div class="table-head" role="row">
+        <div role="columnheader">Account</div>
+        <div class="col-code" role="columnheader">Currency</div>
+        <div role="columnheader">Pending</div>
+        <div style="text-align:right;" role="columnheader">Amount</div>
       </div>
-      ${tableRows || `<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:12px;">No bank accounts found</div>`}
+      ${tableRows}
     </div>
   `;
 
   const tipHTML = allClear
-    ? `<div class="notice success"><span>🎉</span><div>All bank accounts are fully reconciled! Nothing outstanding.</div></div>`
-    : `<div class="notice info"><span>💡</span><div>
-        To reconcile: open <strong>Xero → Accounting → Bank Accounts</strong>, then click <strong>Reconcile</strong> next to each account with pending items.
-        You have <strong>${data.totalUnreconciled} transaction${data.totalUnreconciled !== 1 ? 's' : ''}</strong> waiting to be matched.
-       </div></div>`;
+    ? `<div class="notice success" role="status">
+         <span aria-hidden="true">🎉</span>
+         <div>All bank accounts are fully reconciled — nothing outstanding.</div>
+       </div>`
+    : `<div class="notice info" role="note">
+         <span aria-hidden="true">💡</span>
+         <div>
+           To reconcile: open <strong>Xero → Accounting → Bank Accounts</strong>, then click <strong>Reconcile</strong>
+           next to each account with pending items.
+           You have <strong>${data.totalUnreconciled} transaction${data.totalUnreconciled !== 1 ? 's' : ''}</strong> waiting to be matched.
+         </div>
+       </div>`;
 
+  $('dashContent').setAttribute('aria-busy', 'false');
   $('dashContent').innerHTML = statsHTML + tableHTML + tipHTML;
-  $('lastSync').textContent = 'Last updated ' + new Date().toLocaleTimeString();
+
+  // Org switcher badge
+  const conns = store.get('allConnections') || [];
+  const orgBadge = $('orgBadge');
+  if (conns.length > 1) {
+    orgBadge.textContent = esc(data.tenantName) + ' ▾';
+    orgBadge.setAttribute('aria-label', `Current organisation: ${data.tenantName}. Click to switch.`);
+    orgBadge.style.display = 'inline-block';
+  } else {
+    orgBadge.style.display = 'none';
+  }
+
+  startSyncTimer();
+}
+
+// ── Load dashboard ────────────────────────────────────────────
+let _dashboardLoading = false;
+
+async function loadDashboard() {
+  if (_dashboardLoading) return;
+  _dashboardLoading = true;
+
+  const refreshBtn = $('btnRefresh');
+  setBtnLoading(refreshBtn, true, '↺ Refreshing…');
+  showScreen('dashboard');
+  showSkeletonDashboard();
+
+  try {
+    const data = await fetchReconciliationData();
+    setStatus(true, data.tenantName);
+    renderDashboard(data);
+  } catch (e) {
+    const msg = translateError(e.message);
+    if (e.message === 'NOT_AUTHENTICATED') {
+      store.clear();
+      setStatus(false, 'Not connected');
+      showScreen('connect');
+      toast('Your session expired — please reconnect.', 'error');
+    } else {
+      $('dashContent').setAttribute('aria-busy', 'false');
+      $('dashContent').innerHTML =
+        errBox(msg) +
+        `<div style="margin-top:12px;">
+           <button class="btn btn-secondary" onclick="loadDashboard()" style="width:auto;padding:10px 20px;">
+             Try again
+           </button>
+         </div>`;
+      toast(msg, 'error', 6000);
+    }
+  } finally {
+    _dashboardLoading = false;
+    setBtnLoading(refreshBtn, false);
+  }
 }
 
 // ── App init ──────────────────────────────────────────────────
 async function init() {
-  const hasCredentials = store.get('clientId');
-  const hasToken = store.get('accessToken');
-  const urlParams = new URLSearchParams(window.location.search);
-  const code = urlParams.get('code');
-  const state = urlParams.get('state');
+  const hasCredentials = store.getCred('clientId');
+  const hasToken       = store.get('accessToken');
+  const urlParams      = new URLSearchParams(window.location.search);
+  const code           = urlParams.get('code');
+  const state          = urlParams.get('state');
 
   // Handle OAuth callback in URL
   if (code && state) {
@@ -869,8 +1278,10 @@ async function init() {
       await exchangeCode(code, state);
       await loadDashboard();
     } catch (e) {
-      $('callbackError').innerHTML = errBox(e.message);
+      const msg = translateError(e.message);
+      $('callbackError').innerHTML = errBox(msg);
       $('callbackError').style.display = 'block';
+      toast(msg, 'error', 6000);
     }
     return;
   }
@@ -890,89 +1301,103 @@ async function init() {
   showScreen('connect');
 }
 
-async function loadDashboard() {
-  showScreen('dashboard');
-  $('dashContent').innerHTML = `<div class="loader"><div class="spinner"></div> Fetching reconciliation data from Xero…</div>`;
-  try {
-    const data = await fetchReconciliationData();
-    setStatus(true, data.tenantName);
-    renderDashboard(data);
-  } catch (e) {
-    if (e.message === 'NOT_AUTHENTICATED') {
-      store.clear();
-      setStatus(false, 'Not connected');
-      showScreen('connect');
-    } else {
-      $('dashContent').innerHTML = errBox(`Failed to load data: ${e.message}`) +
-        `<div style="margin-top:12px;"><button class="btn btn-secondary" onclick="loadDashboard()">Try again</button></div>`;
-    }
-  }
-}
-
 // ── Event listeners ───────────────────────────────────────────
 
-// Setup save
 $('btnSaveSetup').addEventListener('click', async () => {
-  const clientId = $('inputClientId').value.trim();
+  const clientId     = $('inputClientId').value.trim();
   const clientSecret = $('inputClientSecret').value.trim();
+
   if (!clientId) {
     $('setupError').innerHTML = errBox('Please enter your Client ID');
     $('setupError').style.display = 'block';
+    $('inputClientId').focus();
     return;
   }
-  store.set('clientId', clientId);
-  if (clientSecret) store.set('clientSecret', clientSecret);
+
+  store.setCred('clientId', clientId);
+  if (clientSecret) store.setCred('clientSecret', clientSecret);
   $('setupError').style.display = 'none';
   showScreen('connect');
+  toast('Credentials saved', 'success');
 });
 
-// Open Xero login
 $('btnConnect').addEventListener('click', async () => {
-  const url = await buildAuthURL();
-  window.open(url, '_blank');
+  const btn = $('btnConnect');
+  setBtnLoading(btn, true, 'Opening Xero…');
+  try {
+    const url = await buildAuthURL();
+    window.open(url, '_blank', 'noopener');
+  } finally {
+    setBtnLoading(btn, false);
+  }
 });
 
-// Go to manual callback entry
 $('btnGoCallback').addEventListener('click', () => showScreen('callback'));
 
-// Reset setup
 $('btnResetSetup').addEventListener('click', () => {
-  store.clear();
+  store.clearAll();
   showScreen('setup');
   setStatus(false, 'Not connected');
 });
 
-// Exchange token from pasted callback URL
 $('btnExchangeToken').addEventListener('click', async () => {
   const btn = $('btnExchangeToken');
-  btn.disabled = true;
-  btn.textContent = 'Connecting…';
+  setBtnLoading(btn, true, 'Connecting…');
   $('callbackError').style.display = 'none';
+
   try {
     const raw = $('inputCallbackUrl').value.trim();
-    const u = new URL(raw);
+    if (!raw) throw new Error('Please paste the full redirect URL from your browser.');
+    const u    = new URL(raw);
     const code = u.searchParams.get('code');
     const state = u.searchParams.get('state');
-    if (!code) throw new Error('No code found in URL. Make sure you pasted the full redirect URL.');
+    if (!code) throw new Error('No authorisation code found in the URL. Make sure you pasted the full redirect URL.');
     await exchangeCode(code, state);
+    toast('Connected to Xero', 'success');
     await loadDashboard();
   } catch (e) {
-    $('callbackError').innerHTML = errBox(e.message);
+    const msg = translateError(e.message);
+    $('callbackError').innerHTML = errBox(msg);
     $('callbackError').style.display = 'block';
-    btn.disabled = false;
-    btn.textContent = 'Complete Connection →';
+    toast(msg, 'error', 6000);
+    setBtnLoading(btn, false);
   }
 });
 
-// Refresh dashboard
 $('btnRefresh').addEventListener('click', loadDashboard);
 
-// Disconnect
+$('orgBadge').addEventListener('click', async () => {
+  const conns = store.get('allConnections') || [];
+  if (conns.length <= 1) return;
+  store.del('tenantId');
+  store.del('tenantName');
+  await showOrgPicker(conns);
+  await loadDashboard();
+});
+
 $('btnDisconnect').addEventListener('click', () => {
-  if (!confirm('Disconnect from Xero?')) return;
-  store.clear();
-  setStatus(false, 'Not connected');
-  showScreen('connect');
+  const btn = $('btnDisconnect');
+  if (btn.dataset.confirming === 'true') {
+    store.clearAll();
+    setStatus(false, 'Not connected');
+    if (_syncTimerID) clearInterval(_syncTimerID);
+    showScreen('connect');
+    toast('Disconnected from Xero', 'info');
+    btn.dataset.confirming = 'false';
+    setBtnLoading(btn, false);
+  } else {
+    btn.dataset.confirming = 'true';
+    const orig = btn.textContent;
+    btn.textContent = 'Confirm disconnect';
+    btn.style.color = 'var(--warn)';
+    btn.style.borderColor = 'rgba(255,112,67,0.4)';
+    setTimeout(() => {
+      btn.dataset.confirming = 'false';
+      btn.textContent = orig;
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 4000);
+  }
 });
 
 // ── Boot ──────────────────────────────────────────────────────
