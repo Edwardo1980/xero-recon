@@ -59,15 +59,6 @@ export default function DashboardScreen() {
     }
   }, [isError, error, clearTokens, navigate, toast]);
 
-  // Auto-refresh when tab becomes visible and data is stale
-  useEffect(() => {
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') forceRefresh();
-    };
-    document.addEventListener('visibilitychange', onVisible);
-    return () => document.removeEventListener('visibilitychange', onVisible);
-  }, [forceRefresh]);
-
   // Keyboard shortcuts
   useEffect(() => {
     const onKey = e => {

@@ -91,6 +91,9 @@ export async function exchangeCode(code, returnedState) {
     throw new Error(`Token exchange failed (${resp.status})${detail ? `: ${detail}` : ''}`);
   }
   const tokens = await resp.json();
+  // Clear PKCE values immediately after use — they have no value after exchange
+  sessionStorage.removeItem('xero_state');
+  sessionStorage.removeItem('xero_codeVerifier');
   saveTokens(tokens);
   return tokens;
 }
