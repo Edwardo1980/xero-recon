@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuthStore } from '../lib/store.js';
 
 export function useSessionExpiry() {
@@ -31,4 +31,34 @@ export function useOnlineStatus() {
     return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); };
   }, []);
   return online;
+}
+
+export function useSwUpdate() {
+  const [updateReady, setUpdateReady] = useState(false);
+
+  useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+
+    navigator.serviceWorker.ready.then(reg => {
+      if (reg.waiting) { setUpdateReady(true); return; }
+
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker?.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            setUpdateReady(true);
+          }
+        });
+      });
+    });
+  }, []);
+
+  const applyUpdate = useCallback(() => {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.waiting?.postMessage('SKIP_WAITING');
+      window.location.reload();
+    });
+  }, []);
+
+  return { updateReady, applyUpdate };
 }

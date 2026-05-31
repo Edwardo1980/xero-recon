@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
     <footer className="site-footer" aria-label="Site footer">
-      <span>Xero Reconciliation Assistant · v1.4.0</span>
+      <span>Xero Reconciliation Assistant · v{__APP_VERSION__}</span>
       <span>
         <a href="https://developer.xero.com/documentation/api/accounting/overview" target="_blank" rel="noopener noreferrer">
           Xero API Docs
