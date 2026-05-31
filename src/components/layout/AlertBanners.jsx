@@ -16,6 +16,18 @@ export default function AlertBanners() {
     return () => document.body.classList.remove('has-banner');
   }, [hasBanner]);
 
+  // Track actual banner stack height so .wrap padding-top stays exact
+  const wrapRef = useRef(null);
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const sync = () => document.body.style.setProperty('--banner-height', `${el.getBoundingClientRect().height}px`);
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    return () => { ro.disconnect(); document.body.style.removeProperty('--banner-height'); };
+  }, []);
+
   // Skip initial mount — only toast when status changes from offline → online
   const mountedRef = useRef(false);
   useEffect(() => {
@@ -24,7 +36,7 @@ export default function AlertBanners() {
   }, [online, toast]);
 
   return (
-    <div className="alert-banners-wrap">
+    <div className="alert-banners-wrap" ref={wrapRef}>
       {!online && (
         <div className="alert-banner offline show" role="alert" aria-live="assertive">
           <span aria-hidden="true">⚡</span>

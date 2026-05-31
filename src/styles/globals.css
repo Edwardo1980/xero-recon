@@ -90,17 +90,7 @@
   .wstep.done { color: var(--text-dim); }
   .wstep-line { flex: 1; height: 1px; background: var(--border); margin: 0 8px; }
 
-  /* ── SW update banner ── */
-  .sw-update-banner {
-    display: none;
-    align-items: center; justify-content: center; gap: 10px;
-    background: var(--blue-dim); border-bottom: 1px solid rgba(61,158,255,0.2);
-    padding: 10px 20px; font-size: 11px; color: #7bbfff;
-    font-family: 'DM Mono', monospace;
-  }
-  .sw-update-banner.show { display: flex; }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
     background: var(--bg);
@@ -667,7 +657,7 @@
   .alert-banner.offline { background: #2a150e; color: #ffaa88; border-bottom: 1px solid rgba(255,112,67,0.3); }
   .alert-banner.session { background: #231f0a; color: var(--gold); border-bottom: 1px solid rgba(255,201,64,0.3); }
   .alert-banner.show { display: flex; }
-  body.has-banner .wrap { padding-top: 80px; }
+  body.has-banner .wrap { padding-top: var(--banner-height, 0px); }
 
   /* ── Sortable column headers ── */
   .sort-th {

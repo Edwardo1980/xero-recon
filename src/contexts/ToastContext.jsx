@@ -18,7 +18,13 @@ export function ToastProvider({ children }) {
     }, duration);
   }, []);
 
-  const dismiss = useCallback((id) => setToasts(t => t.filter(x => x.id !== id)), []);
+  const dismiss = useCallback((id) => {
+    setToasts(prev => {
+      const t = prev.find(x => x.id === id);
+      if (t) activeKeys.current.delete(`${t.type}:${t.message}`);
+      return prev.filter(x => x.id !== id);
+    });
+  }, []);
 
   return (
     <ToastContext.Provider value={toast}>
