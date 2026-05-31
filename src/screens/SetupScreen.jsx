@@ -76,14 +76,14 @@ export default function SetupScreen() {
 
         <div className="field">
           <label htmlFor="inputClientId">Client ID</label>
-          <input id="inputClientId" type="text" value={clientId} onChange={e => setClientId(e.target.value)} placeholder="Paste your Xero Client ID…" autoComplete="off" spellCheck={false} />
+          <input id="inputClientId" type="text" value={clientId} onChange={e => setClientId(e.target.value)} onKeyDown={e => e.key === 'Enter' && onSave()} placeholder="Paste your Xero Client ID…" autoComplete="off" spellCheck={false} />
         </div>
         <div className="field">
           <label htmlFor="inputClientSecret">Client Secret</label>
-          <input id="inputClientSecret" type="password" value={clientSecret} onChange={e => setClientSecret(e.target.value)} placeholder="Paste your Xero Client Secret…" autoComplete="off" />
+          <input id="inputClientSecret" type="password" value={clientSecret} onChange={e => setClientSecret(e.target.value)} onKeyDown={e => e.key === 'Enter' && onSave()} placeholder="Paste your Xero Client Secret…" autoComplete="off" />
         </div>
 
-        {error && <Notice type="warn" >{error}</Notice>}
+        {error && <Notice type="warn">{error}</Notice>}
         <button className="btn btn-primary" onClick={onSave}>Save &amp; Connect to Xero →</button>
       </div>
     </div>

@@ -14,7 +14,7 @@ export default function CallbackScreen({ code, state }) {
   const [loading, setLoading] = useState(false);
   const navigate  = useNavigate();
   const toast     = useToast();
-  const { allConnections, setTenant } = useAuthStore.getState();
+  const { setTenant } = useAuthStore.getState();
 
   const finish = async (authCode, authState) => {
     setLoading(true);
@@ -79,7 +79,7 @@ export default function CallbackScreen({ code, state }) {
           <>
             <div className="field">
               <label htmlFor="inputCallbackUrl">Full Redirect URL from browser</label>
-              <input id="inputCallbackUrl" type="text" value={url} onChange={e => setUrl(e.target.value)} placeholder="https://yoursite.com/callback?code=…&state=…" autoComplete="off" spellCheck={false} />
+              <input id="inputCallbackUrl" type="text" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && onManual()} placeholder="https://yoursite.com/callback?code=…&state=…" autoComplete="off" spellCheck={false} />
             </div>
             {error && <Notice type="warn">{error}</Notice>}
             <button className="btn btn-primary" onClick={onManual}>Complete Connection →</button>

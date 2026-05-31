@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { HashRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './lib/store.js';
 import { REDIRECT_URI } from './lib/constants.js';
 import AlertBanners from './components/layout/AlertBanners.jsx';
@@ -11,6 +11,12 @@ import ConnectScreen from './screens/ConnectScreen.jsx';
 import CallbackScreen from './screens/CallbackScreen.jsx';
 import OrgPickerScreen from './screens/OrgPickerScreen.jsx';
 import DashboardScreen from './screens/DashboardScreen.jsx';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  return null;
+}
 
 // Intercept OAuth redirect params before the router takes over
 function OAuthInterceptor({ children }) {
@@ -65,6 +71,7 @@ export default function App() {
   return (
     <HashRouter>
       <OAuthInterceptor>
+        <ScrollToTop />
         <AlertBanners />
         <div className="wrap" role="main">
           <div id="ariaAnnounce" className="sr-only" aria-live="polite" aria-atomic="true" />
