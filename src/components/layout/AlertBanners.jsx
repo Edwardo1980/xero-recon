@@ -37,7 +37,7 @@ export default function AlertBanners() {
           <span>Your Xero session expires in {minsLeft} minute{minsLeft !== 1 ? 's' : ''} —</span>
           <button
             type="button"
-            onClick={() => doRefreshToken().then(() => toast('Session refreshed', 'success')).catch(() => {})}
+            onClick={() => doRefreshToken().then(() => toast('Session refreshed', 'success')).catch(() => toast('Session refresh failed — please reconnect.', 'error'))}
             className="btn btn-ghost"
             style={{ padding: '4px 10px', fontSize: 10, marginLeft: 4 }}
           >
