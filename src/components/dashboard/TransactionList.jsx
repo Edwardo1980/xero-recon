@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { fmt, parseXeroDate } from '../../lib/utils.js';
 
 const MAX_SHOW = 30;
@@ -6,15 +6,17 @@ const MAX_SHOW = 30;
 export default function TransactionList({ acc }) {
   const [search, setSearch] = useState('');
 
-  const q    = search.toLowerCase();
-  const txs  = acc.transactions ?? [];
   // Filter all transactions first, then cap; searching only a slice would miss results
-  const base     = q ? txs.filter(tx =>
-    (tx.Contact?.Name ?? '').toLowerCase().includes(q) ||
-    (tx.Reference ?? '').toLowerCase().includes(q) ||
-    parseXeroDate(tx.Date).toLowerCase().includes(q)
-  ) : txs;
-  const filtered = base.slice(0, MAX_SHOW);
+  const { filtered, baseLen } = useMemo(() => {
+    const q    = search.toLowerCase();
+    const txs  = acc.transactions ?? [];
+    const base = q ? txs.filter(tx =>
+      (tx.Contact?.Name ?? '').toLowerCase().includes(q) ||
+      (tx.Reference ?? '').toLowerCase().includes(q) ||
+      parseXeroDate(tx.Date).toLowerCase().includes(q)
+    ) : txs;
+    return { filtered: base.slice(0, MAX_SHOW), baseLen: base.length };
+  }, [search, acc.transactions]);
 
   const xeroUrl = `https://go.xero.com/Bank/Reconcile.aspx?accountID=${encodeURIComponent(acc.id)}`;
 
@@ -67,7 +69,7 @@ export default function TransactionList({ acc }) {
       {/* Rows */}
       {filtered.length === 0 && (
         <div className="tx-more">
-          {q
+          {search
             ? <>No transactions matching &ldquo;{search}&rdquo; — <button type="button" onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--blue)', padding: 0, font: 'inherit', fontSize: 'inherit' }}>clear search</button></>
             : 'No transactions found.'}
         </div>
@@ -90,9 +92,9 @@ export default function TransactionList({ acc }) {
       })}
 
       {/* "More" note */}
-      {base.length > MAX_SHOW && (
+      {baseLen > MAX_SHOW && (
         <div className="tx-more">
-          Showing {MAX_SHOW} of {base.length}{q ? ' matching' : ''} —{' '}
+          Showing {MAX_SHOW} of {baseLen}{search ? ' matching' : ''} —{' '}
           <a href={xeroUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--blue)' }} aria-label="Open all transactions in Xero (opens in new tab)">
             open Xero to see all
           </a>

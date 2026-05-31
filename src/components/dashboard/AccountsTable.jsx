@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { fmt } from '../../lib/utils.js';
 import AccountRow from './AccountRow.jsx';
 
@@ -40,11 +40,12 @@ export default function AccountsTable({ accounts, currency }) {
     else { setSortCol(col); setSortDir(col === 'name' ? 'asc' : 'desc'); }
   };
 
-  const displayed  = sortAccounts(
+  const pendingCnt = useMemo(() => accounts.filter(a => a.count > 0).length, [accounts]);
+
+  const displayed = useMemo(() => sortAccounts(
     filterPending ? accounts.filter(a => a.count > 0) : accounts,
     sortCol, sortDir
-  );
-  const pendingCnt = accounts.filter(a => a.count > 0).length;
+  ), [accounts, filterPending, sortCol, sortDir]);
 
   const totalPending = displayed.reduce((s, a) => s + a.count,  0);
   const totalAmt     = displayed.reduce((s, a) => s + a.total, 0);
