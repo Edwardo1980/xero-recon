@@ -47,14 +47,14 @@ export function useSwUpdate() {
           }
         });
       });
-    });
+    }).catch(() => {});
   }, []);
 
   const applyUpdate = useCallback(() => {
     navigator.serviceWorker.ready.then(reg => {
       reg.waiting?.postMessage('SKIP_WAITING');
       window.location.reload();
-    });
+    }).catch(() => window.location.reload());
   }, []);
 
   return { updateReady, applyUpdate };
