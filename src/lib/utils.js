@@ -1,4 +1,14 @@
 export function fmt(n, currency = '') {
+  if (currency) {
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: 'currency', currency, maximumFractionDigits: 2,
+        notation: Math.abs(n) >= 1_000_000 ? 'compact' : 'standard',
+      }).format(n);
+    } catch {
+      // Fall through to simple format if currency code is invalid
+    }
+  }
   const abs = Math.abs(n);
   if (abs >= 1_000_000) return `${currency} ${(n / 1_000_000).toFixed(1)}M`;
   if (abs >= 1_000)     return `${currency} ${(n / 1_000).toFixed(1)}K`;

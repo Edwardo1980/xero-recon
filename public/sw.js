@@ -1,7 +1,7 @@
 // Service Worker — Xero Reconciliation Assistant
 // Strategy: cache-first for app shell, network-only for Xero API calls
 
-const CACHE_NAME = 'xero-recon-v1';
+const CACHE_NAME = 'xero-recon-v1.5';
 const SHELL = [
   './',
   './index.html',
