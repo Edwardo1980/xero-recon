@@ -18,7 +18,7 @@ To bump the app version, change `"version"` in `package.json` — it flows autom
 ## Architecture
 
 ### Auth flow (PKCE OAuth2)
-`SetupScreen` saves Client ID/Secret → `ConnectScreen` calls `buildAuthURL()` which generates a PKCE verifier/challenge and opens Xero login → Xero redirects back with `?code=&state=` → `OAuthInterceptor` in `App.jsx` detects these query params, stores them in sessionStorage, clears the URL, and navigates to `/callback` → `CallbackWrapper` reads them from sessionStorage and passes to `CallbackScreen` → `exchangeCode()` validates the state and POSTs to Xero's token endpoint → `loadConnections()` fetches orgs → single org auto-selects, multiple orgs go to `OrgPickerScreen`.
+`SetupScreen` saves Client ID/Secret → `ConnectScreen` calls `buildAuthURL()` which generates a PKCE verifier/challenge and opens Xero login → Xero redirects back with `?code=&state=` → `OAuthInterceptor` in `App.jsx` detects these query params, clears the URL, and navigates to `/callback` passing code+state via React Router in-memory state (never touches sessionStorage) → `CallbackWrapper` reads them via `useLocation().state` → `exchangeCode()` validates the state, POSTs to Xero's token endpoint, then clears PKCE values from sessionStorage → `loadConnections()` fetches orgs → single org auto-selects, multiple orgs go to `OrgPickerScreen`.
 
 ### State management (Zustand — `src/lib/store.js`)
 Two tiers of persistence, both under `useAuthStore`:
@@ -43,6 +43,15 @@ TanStack Query v5 via `useReconciliation()` / `useForceRefresh()` in `src/hooks/
 
 ### CSP
 Injected at **build time only** (not dev) by the `inject-csp` Vite plugin in `vite.config.js`. Dev server has no CSP so HMR works. The CSP restricts `connect-src` to `login.xero.com`, `api.xero.com`, and `identity.xero.com`.
+
+### Accessibility
+- All `<button>` elements have explicit `type="button"` to prevent accidental form submission
+- Interactive non-button elements (org picker, expandable rows) use `role="button"` + `tabIndex` + `onKeyDown` handlers for keyboard support
+- Every interactive element has `:focus-visible` styles using `var(--accent)` outline
+- FAQ accordion uses native `<details>`/`<summary>` for zero-JS keyboard/screenreader support
+- Route changes are announced via `#ariaAnnounce` live region in `App.jsx`
+- External links include `(opens in new tab)` in their `aria-label`
+- `prefers-reduced-motion` disables all animations via `globals.css`
 
 ### Deployment
 Static files only — deploy `dist/` to any CDN or static host. Set `VITE_REDIRECT_URI` to the app's fixed URL if the auto-detected `window.location` would be wrong (e.g. behind a reverse proxy). Register the same URI as the Xero app's redirect URI.
