@@ -14,17 +14,21 @@ function AnimatedCount({ value }) {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reducedMotion) { ref.current.textContent = to; return; }
 
-    const dur   = 550;
-    let start   = null;
-    const step  = ts => {
+    const dur    = 550;
+    let start    = null;
+    let rafId;
+    let active   = true;
+    const step   = ts => {
+      if (!active || !ref.current) return;
       if (!start) start = ts;
       const p = Math.min((ts - start) / dur, 1);
       const v = from + (to - from) * (1 - Math.pow(1 - p, 3));
       ref.current.textContent = Math.round(v);
-      if (p < 1) requestAnimationFrame(step);
-      else ref.current.textContent = to;
+      if (p < 1) { rafId = requestAnimationFrame(step); }
+      else { ref.current.textContent = to; }
     };
-    requestAnimationFrame(step);
+    rafId = requestAnimationFrame(step);
+    return () => { active = false; cancelAnimationFrame(rafId); };
   }, [value]);
 
   return <span ref={ref}>{value}</span>;

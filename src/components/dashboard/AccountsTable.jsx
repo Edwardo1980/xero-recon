@@ -22,7 +22,7 @@ function SortTh({ col, label, sortCol, sortDir, onSort, style }) {
         className="sort-th"
         onClick={() => onSort(col)}
         tabIndex={0}
-        onKeyDown={e => e.key === 'Enter' && onSort(col)}
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSort(col); } }}
       >
         {label} <span className={`sort-arrow${active ? ' active' : ''}`} aria-hidden="true">{arrow}</span>
       </span>
