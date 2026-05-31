@@ -22,15 +22,27 @@ export default function TransactionList({ acc }) {
     <div className="tx-list">
       {/* Toolbar: search + Xero deep link */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 16px', background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
-        <input
-          className="tx-search"
-          type="search"
-          placeholder="Search these transactions…"
-          aria-label={`Search transactions for ${acc.name}`}
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          style={{ flex: 1 }}
-        />
+        <div style={{ position: 'relative', flex: 1 }}>
+          <input
+            className="tx-search"
+            type="search"
+            placeholder="Search these transactions…"
+            aria-label={`Search transactions for ${acc.name}`}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{ width: '100%' }}
+          />
+          {search && (
+            <button
+              type="button"
+              aria-label="Clear search"
+              onClick={() => setSearch('')}
+              style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: '2px 4px', fontSize: 14, lineHeight: 1 }}
+            >
+              ×
+            </button>
+          )}
+        </div>
         <a
           href={xeroUrl}
           target="_blank"
@@ -54,7 +66,11 @@ export default function TransactionList({ acc }) {
 
       {/* Rows */}
       {filtered.length === 0 && (
-        <div className="tx-more">No transactions matching &ldquo;{search}&rdquo;</div>
+        <div className="tx-more">
+          {q
+            ? <>No transactions matching &ldquo;{search}&rdquo; — <button type="button" onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--blue)', padding: 0, font: 'inherit', fontSize: 'inherit' }}>clear search</button></>
+            : 'No transactions found.'}
+        </div>
       )}
       {filtered.map((tx, i) => {
         const isIn = tx.Type === 'RECEIVE' || tx.Type === 'RECEIVECREDIT';

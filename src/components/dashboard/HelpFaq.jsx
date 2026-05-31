@@ -28,21 +28,13 @@ const FAQS = [
 ];
 
 function FaqItem({ faq }) {
-  const [open, setOpen] = useState(false);
   return (
-    <div className="faq-item">
-      <div
-        className={`faq-q${open ? ' open' : ''}`}
-        onClick={() => setOpen(o => !o)}
-        role="button"
-        tabIndex={0}
-        aria-expanded={open}
-        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(o => !o); } }}
-      >
+    <details className="faq-item">
+      <summary className="faq-q">
         {faq.q} <span className="faq-chevron" aria-hidden="true">▶</span>
-      </div>
-      {open && <div className="faq-a open">{faq.a}</div>}
-    </div>
+      </summary>
+      <div className="faq-a">{faq.a}</div>
+    </details>
   );
 }
 
@@ -50,21 +42,20 @@ export default function HelpFaq() {
   const [open, setOpen] = useState(false);
   return (
     <div id="helpSection" style={{ marginTop: 8 }}>
-      <div
-        className="section-title"
-        style={{ cursor: 'pointer', userSelect: 'none' }}
-        onClick={() => setOpen(o => !o)}
-        role="button"
-        tabIndex={0}
-        aria-expanded={open}
-        aria-controls="helpContent"
-        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(o => !o); } }}
-      >
-        Help &amp; FAQ{' '}
-        <span
-          aria-hidden="true"
-          style={{ fontSize: 10, color: 'var(--text-muted)', display: 'inline-block', transition: 'transform 0.2s', transform: open ? 'rotate(90deg)' : 'none' }}
-        >▶</span>
+      <div className="section-title">
+        <button
+          type="button"
+          className="faq-toggle-btn"
+          onClick={() => setOpen(o => !o)}
+          aria-expanded={open}
+          aria-controls="helpContent"
+        >
+          Help &amp; FAQ{' '}
+          <span
+            aria-hidden="true"
+            style={{ fontSize: 10, color: 'var(--text-muted)', display: 'inline-block', transition: 'transform 0.2s', transform: open ? 'rotate(90deg)' : 'none' }}
+          >▶</span>
+        </button>
       </div>
       {open && (
         <div id="helpContent" role="region" aria-label="Help and FAQ">
