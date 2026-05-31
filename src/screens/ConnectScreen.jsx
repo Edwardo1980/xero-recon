@@ -3,21 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../lib/store.js';
 import { buildAuthURL } from '../lib/auth.js';
 import { usePageTitle } from '../hooks/usePageTitle.js';
+import { useToast } from '../contexts/ToastContext.jsx';
 import Notice from '../components/ui/Notice.jsx';
 import WizardStepper from '../components/ui/WizardStepper.jsx';
 
 export default function ConnectScreen() {
   usePageTitle('Connect to Xero');
   const [loading,  setLoading]  = useState(false);
+  const [popupBlocked, setPopupBlocked] = useState(false);
   const navigate   = useNavigate();
+  const toast      = useToast();
   const clientId   = useAuthStore(s => s.clientId);
   const clearAll   = useAuthStore(s => s.clearAll);
 
   const onOpen = async () => {
     setLoading(true);
+    setPopupBlocked(false);
     try {
       const url = await buildAuthURL(clientId);
-      window.open(url, '_blank', 'noopener');
+      const win = window.open(url, '_blank', 'noopener');
+      if (!win) setPopupBlocked(true);
+    } catch (e) {
+      toast('Could not build the Xero login URL. Please try again.', 'error');
     } finally {
       setLoading(false);
     }
@@ -40,6 +47,11 @@ export default function ConnectScreen() {
         <button type="button" className={`btn btn-primary${loading ? ' btn-loading' : ''}`} onClick={onOpen} disabled={loading} style={{ marginBottom: 10 }}>
           {loading ? 'Opening Xero…' : 'Open Xero Login →'}
         </button>
+        {popupBlocked && (
+          <Notice type="warn">
+            Pop-up blocked — your browser prevented Xero from opening. Allow pop-ups for this site, or click &ldquo;I've authorised&rdquo; below to paste the callback URL manually.
+          </Notice>
+        )}
         <button type="button" className="btn btn-secondary" style={{ width: '100%' }} onClick={() => navigate('/callback')}>
           I've authorised — enter callback URL
         </button>
