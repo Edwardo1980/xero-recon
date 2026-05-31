@@ -73,15 +73,28 @@ export async function xeroGet(path, retried = false) {
   return resp.json();
 }
 
+// Xero paginates at 100 records/page; fetch all pages up to a safety cap.
+const TX_PAGE_CAP = 10; // max 1000 transactions
+
+async function fetchAllBankTransactions() {
+  const all = [];
+  for (let page = 1; page <= TX_PAGE_CAP; page++) {
+    const resp  = await xeroGet(`/BankTransactions?where=IsReconciled%3D%3Dfalse%26%26Status%3D%3D%22AUTHORISED%22&page=${page}`);
+    const batch = resp.BankTransactions ?? [];
+    all.push(...batch);
+    if (batch.length < 100) break; // reached the last page
+  }
+  return all;
+}
+
 // ── Data fetching ─────────────────────────────────────────────
 export async function fetchReconciliationData() {
-  const [txResp, accResp] = await Promise.all([
-    xeroGet('/BankTransactions?where=IsReconciled%3D%3Dfalse%26%26Status%3D%3D%22AUTHORISED%22'),
+  const [txs, accResp] = await Promise.all([
+    fetchAllBankTransactions(),
     xeroGet('/Accounts?where=Type%3D%3D%22BANK%22%26%26Status%3D%3D%22ACTIVE%22'),
   ]);
 
-  const txs      = txResp.BankTransactions ?? [];
-  const accounts = accResp.Accounts        ?? [];
+  const accounts = accResp.Accounts ?? [];
 
   const accountSummary = accounts.map(acc => {
     const accTxs = txs.filter(t => t.BankAccount?.AccountID === acc.AccountID);
