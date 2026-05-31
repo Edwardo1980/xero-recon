@@ -29,10 +29,11 @@ export default function OrgPickerScreen() {
         <h2>Select Organisation</h2>
         <p>Your Xero account has access to multiple organisations. Select the one you want to reconcile.</p>
 
-        <div className="org-list" role="listbox" aria-label="Xero organisations">
+        <div className="org-list" role="listbox" aria-label="Xero organisations" aria-activedescendant={selected ? `org-${selected}` : undefined}>
           {allConnections.map(conn => (
             <div
               key={conn.tenantId}
+              id={`org-${conn.tenantId}`}
               className={`org-item${selected === conn.tenantId ? ' selected' : ''}`}
               role="option"
               aria-selected={selected === conn.tenantId}

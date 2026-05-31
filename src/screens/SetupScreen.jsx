@@ -46,7 +46,7 @@ export default function SetupScreen() {
           <div className="step" role="listitem">
             <div className="step-n" aria-hidden="true">1</div>
             <div className="step-body">
-              Go to <a href="https://developer.xero.com/app/manage" target="_blank" rel="noopener noreferrer">developer.xero.com/app/manage</a> and sign in. Click <strong>New App</strong>.
+              Go to <a href="https://developer.xero.com/app/manage" target="_blank" rel="noopener noreferrer" aria-label="Xero Developer Portal (opens in new tab)">developer.xero.com/app/manage</a> and sign in. Click <strong>New App</strong>.
             </div>
           </div>
           <div className="step" role="listitem">

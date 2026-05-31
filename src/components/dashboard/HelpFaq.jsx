@@ -57,13 +57,12 @@ export default function HelpFaq() {
           >▶</span>
         </button>
       </div>
-      {open && (
-        <div id="helpContent" role="region" aria-label="Help and FAQ">
-          <div className="card" style={{ padding: '20px 24px' }}>
-            {FAQS.map(faq => <FaqItem key={faq.q} faq={faq} />)}
-          </div>
+      {/* Always in DOM so aria-controls reference is valid; hidden attribute hides from AT when closed */}
+      <div id="helpContent" role="region" aria-label="Help and FAQ" hidden={!open}>
+        <div className="card" style={{ padding: '20px 24px' }}>
+          {FAQS.map(faq => <FaqItem key={faq.q} faq={faq} />)}
         </div>
-      )}
+      </div>
     </div>
   );
 }
