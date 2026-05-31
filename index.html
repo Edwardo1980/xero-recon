@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://login.xero.com https://api.xero.com; img-src 'self' data:;">
 <title>Xero Reconciliation Assistant</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Clash+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -515,6 +516,16 @@
     gap: 8px;
   }
   .last-sync { font-size: 10px; color: var(--text-muted); }
+  .kbd-hint { font-size: 10px; color: var(--text-muted); }
+  .kbd-hint kbd {
+    background: var(--surface3);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
   .org-badge {
     font-size: 10px;
     color: var(--text-dim);
@@ -599,6 +610,7 @@
           <div class="step-body">
             Set <strong>Integration type</strong> to <strong>Web app</strong>. For the <strong>Redirect URI</strong>, enter exactly:
             <code id="redirectUriDisplay"></code>
+            <button class="btn btn-ghost" id="btnCopyUri" style="margin-top:8px;font-size:10px;padding:5px 10px;" aria-label="Copy redirect URI to clipboard">Copy URI</button>
           </div>
         </div>
         <div class="step" role="listitem">
@@ -693,9 +705,11 @@
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span class="last-sync" id="lastSync" aria-live="polite">—</span>
         <button class="org-badge" id="orgBadge" style="display:none;" aria-label="Switch organisation"></button>
+        <span class="kbd-hint" aria-hidden="true"><kbd>R</kbd> refresh · <kbd>E</kbd> export</span>
       </div>
       <div class="btn-row">
         <button class="btn btn-secondary" id="btnRefresh" style="padding:8px 14px;font-size:11px;" aria-label="Refresh data">↺ Refresh</button>
+        <button class="btn btn-ghost" id="btnExportCsv" style="font-size:11px;padding:8px 14px;" aria-label="Export reconciliation data as CSV">Export CSV</button>
         <button class="btn btn-ghost" id="btnDisconnect" aria-label="Disconnect from Xero">Disconnect</button>
       </div>
     </div>
@@ -719,6 +733,7 @@ const XERO_CONNECTIONS = 'https://api.xero.com/connections';
 const REDIRECT_URI     = window.location.href.split('?')[0].split('#')[0];
 const SCOPES           = 'openid profile email accounting.transactions accounting.reports.read offline_access';
 const FETCH_TIMEOUT_MS = 15000;
+const CACHE_TTL_MS     = 120000; // 2 minutes
 
 document.getElementById('redirectUriDisplay').textContent = REDIRECT_URI;
 
@@ -1091,6 +1106,39 @@ async function fetchReconciliationData() {
   };
 }
 
+// ── Data cache ────────────────────────────────────────────────
+let _cachedData = null;
+let _cacheTime  = 0;
+
+function cacheIsValid() {
+  return _cachedData && Date.now() - _cacheTime < CACHE_TTL_MS;
+}
+
+// ── CSV export ────────────────────────────────────────────────
+function exportCSV(data) {
+  const rows = [['Account', 'Code', 'Currency', 'Pending Transactions', 'Outstanding Amount']];
+  data.accounts.forEach(acc => {
+    rows.push([acc.name, acc.code, acc.currency, acc.count, acc.total.toFixed(2)]);
+  });
+  rows.push([]);
+  rows.push(['Export date', new Date().toISOString(), '', 'Organisation', data.tenantName]);
+
+  const csv = rows.map(r =>
+    r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')
+  ).join('\r\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `xero-reconciliation-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('CSV exported', 'success');
+}
+
 // ── Sync timer ────────────────────────────────────────────────
 let _syncTimestamp  = null;
 let _syncTimerID    = null;
@@ -1219,23 +1267,33 @@ function renderDashboard(data) {
 // ── Load dashboard ────────────────────────────────────────────
 let _dashboardLoading = false;
 
-async function loadDashboard() {
+async function loadDashboard(force = false) {
   if (_dashboardLoading) return;
-  _dashboardLoading = true;
 
+  showScreen('dashboard');
+
+  // Serve cached data immediately while refreshing in background
+  if (!force && cacheIsValid()) {
+    renderDashboard(_cachedData);
+    return;
+  }
+
+  _dashboardLoading = true;
   const refreshBtn = $('btnRefresh');
   setBtnLoading(refreshBtn, true, '↺ Refreshing…');
-  showScreen('dashboard');
   showSkeletonDashboard();
 
   try {
     const data = await fetchReconciliationData();
+    _cachedData = data;
+    _cacheTime  = Date.now();
     setStatus(true, data.tenantName);
     renderDashboard(data);
   } catch (e) {
     const msg = translateError(e.message);
     if (e.message === 'NOT_AUTHENTICATED') {
       store.clear();
+      _cachedData = null;
       setStatus(false, 'Not connected');
       showScreen('connect');
       toast('Your session expired — please reconnect.', 'error');
@@ -1244,7 +1302,7 @@ async function loadDashboard() {
       $('dashContent').innerHTML =
         errBox(msg) +
         `<div style="margin-top:12px;">
-           <button class="btn btn-secondary" onclick="loadDashboard()" style="width:auto;padding:10px 20px;">
+           <button class="btn btn-secondary" onclick="loadDashboard(true)" style="width:auto;padding:10px 20px;">
              Try again
            </button>
          </div>`;
@@ -1364,7 +1422,7 @@ $('btnExchangeToken').addEventListener('click', async () => {
   }
 });
 
-$('btnRefresh').addEventListener('click', loadDashboard);
+$('btnRefresh').addEventListener('click', () => loadDashboard(true));
 
 $('orgBadge').addEventListener('click', async () => {
   const conns = store.get('allConnections') || [];
@@ -1398,6 +1456,50 @@ $('btnDisconnect').addEventListener('click', () => {
       btn.style.borderColor = '';
     }, 4000);
   }
+});
+
+$('btnExportCsv').addEventListener('click', () => {
+  if (!_cachedData) {
+    toast('No data to export yet — refresh first.', 'info');
+    return;
+  }
+  exportCSV(_cachedData);
+});
+
+$('btnCopyUri') && $('btnCopyUri').addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(REDIRECT_URI);
+    toast('Redirect URI copied to clipboard', 'success');
+  } catch {
+    toast('Copy failed — please select and copy the URI manually.', 'error');
+  }
+});
+
+// ── Keyboard shortcuts ────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+  if (e.key === 'r' || e.key === 'R') {
+    const dash = $('screen-dashboard');
+    if (dash.classList.contains('active')) { e.preventDefault(); loadDashboard(true); }
+  }
+  if (e.key === 'e' || e.key === 'E') {
+    const dash = $('screen-dashboard');
+    if (dash.classList.contains('active') && _cachedData) { e.preventDefault(); exportCSV(_cachedData); }
+  }
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.toast').forEach(t => t.click());
+  }
+});
+
+// ── Auto-refresh on tab focus when data is stale ──────────────
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (!store.get('accessToken')) return;
+  const dash = $('screen-dashboard');
+  if (!dash.classList.contains('active')) return;
+  if (!cacheIsValid()) loadDashboard(true);
 });
 
 // ── Boot ──────────────────────────────────────────────────────
