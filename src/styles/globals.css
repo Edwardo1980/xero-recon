@@ -713,6 +713,17 @@
 
   /* ── Expandable account rows ── */
   .acc-row-toggle { cursor: pointer; }
+  /* Reset <button> defaults while keeping .table-row grid/border styles */
+  button.acc-row-toggle {
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    width: 100%;
+    text-align: left;
+    color: inherit;
+    font: inherit;
+  }
   .acc-row-toggle:hover .acc-name { color: var(--accent); }
   .acc-row-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
   .acc-chevron { font-size: 9px; color: var(--text-muted); width: 14px; flex-shrink: 0; transition: transform 0.2s; }
