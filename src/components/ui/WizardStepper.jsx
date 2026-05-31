@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 
 export default function WizardStepper({ step }) {
-  const steps = ['Create app', 'Connect', 'Ready'];
+  const steps = ['Setup', 'Connect', 'Done'];
   return (
     <div className="wizard-stepper" aria-label="Setup progress">
       {steps.map((label, i) => {

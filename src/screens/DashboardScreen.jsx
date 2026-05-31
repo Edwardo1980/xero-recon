@@ -119,8 +119,7 @@ export default function DashboardScreen() {
             {data.totalUnreconciled === 0
               ? <Notice type="success">All bank accounts are fully reconciled — nothing outstanding.</Notice>
               : <Notice type="info">
-                  To reconcile: open <strong>Xero → Accounting → Bank Accounts</strong>, click <strong>Reconcile</strong> next to each pending account.
-                  Click any account row above to expand individual transactions.
+                  To reconcile in Xero: go to <strong>Accounting → Bank Accounts</strong> and click <strong>Reconcile</strong> next to each pending account. Expand any row above to view and deep-link directly into Xero.
                 </Notice>
             }
           </>

@@ -41,19 +41,21 @@ export default function StatGrid({ data }) {
 
   return (
     <>
-      <div className="section-title">Overview — {data.tenantName}</div>
+      <div className="section-header">
+        <div className="section-title">{data.tenantName}</div>
+      </div>
       <div className="stats-row" role="list" aria-label="Summary statistics">
         <div className={`stat ${allClear ? 'green' : 'warn'}`} role="listitem" aria-label={`${data.totalUnreconciled} unreconciled transaction${data.totalUnreconciled !== 1 ? 's' : ''}`}>
           <div className="stat-val" aria-hidden="true"><AnimatedCount value={data.totalUnreconciled} /></div>
-          <div className="stat-lbl" aria-hidden="true">Unreconciled txns</div>
+          <div className="stat-lbl" aria-hidden="true">Unreconciled</div>
         </div>
         <div className="stat blue" role="listitem" aria-label={`Outstanding value: ${fmt(data.totalValue, data.currency)}`}>
           <div className="stat-val" style={{ fontSize: 20 }} aria-hidden="true">{fmt(data.totalValue, data.currency)}</div>
-          <div className="stat-lbl" aria-hidden="true">Outstanding value</div>
+          <div className="stat-lbl" aria-hidden="true">Outstanding</div>
         </div>
-        <div className={`stat ${pendingAccs > 0 ? 'warn' : 'green'}`} role="listitem" aria-label={`${pendingAccs} account${pendingAccs !== 1 ? 's' : ''} pending reconciliation`}>
+        <div className={`stat ${pendingAccs > 0 ? 'warn' : 'green'}`} role="listitem" aria-label={`${pendingAccs} account${pendingAccs !== 1 ? 's' : ''} needing attention`}>
           <div className="stat-val" aria-hidden="true"><AnimatedCount value={pendingAccs} /></div>
-          <div className="stat-lbl" aria-hidden="true">Accounts pending</div>
+          <div className="stat-lbl" aria-hidden="true">Needs attention</div>
         </div>
       </div>
     </>
