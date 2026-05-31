@@ -47,8 +47,10 @@ export default function AccountsTable({ accounts, currency }) {
     sortCol, sortDir
   ), [accounts, filterPending, sortCol, sortDir]);
 
-  const totalPending = displayed.reduce((s, a) => s + a.count,  0);
-  const totalAmt     = displayed.reduce((s, a) => s + a.total, 0);
+  const { totalPending, totalAmt } = useMemo(() => ({
+    totalPending: displayed.reduce((s, a) => s + a.count,  0),
+    totalAmt:     displayed.reduce((s, a) => s + a.total, 0),
+  }), [displayed]);
 
   return (
     <>

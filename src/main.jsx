@@ -2,13 +2,14 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ToastProvider } from './contexts/ToastContext.jsx';
+import { CACHE_STALE_MS } from './lib/constants.js';
 import App from './App.jsx';
 import './styles/globals.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime:          2 * 60 * 1000,
+      staleTime:          CACHE_STALE_MS,
       gcTime:             5 * 60 * 1000,
       refetchOnWindowFocus: true,
     },

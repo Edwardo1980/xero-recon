@@ -73,6 +73,13 @@ export async function buildAuthURL(clientId) {
   })}`;
 }
 
+// ── Token request headers ─────────────────────────────────────
+function buildTokenHeaders(clientId, clientSecret) {
+  const h = { 'Content-Type': 'application/x-www-form-urlencoded' };
+  if (clientSecret) h['Authorization'] = 'Basic ' + btoa(`${clientId}:${clientSecret}`);
+  return h;
+}
+
 // ── Exchange code for tokens ──────────────────────────────────
 export async function exchangeCode(code, returnedState) {
   const savedState = JSON.parse(sessionStorage.getItem('xero_state') ?? 'null');
@@ -82,8 +89,7 @@ export async function exchangeCode(code, returnedState) {
   const { clientId, clientSecret, saveTokens } = useAuthStore.getState();
 
   const body    = new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: REDIRECT_URI, client_id: clientId, code_verifier: verifier });
-  const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
-  if (clientSecret) headers['Authorization'] = 'Basic ' + btoa(`${clientId}:${clientSecret}`);
+  const headers = buildTokenHeaders(clientId, clientSecret);
 
   const resp = await fetchWithTimeout(XERO_TOKEN_URL, { method: 'POST', headers, body });
   if (!resp.ok) {
@@ -111,8 +117,7 @@ export async function doRefreshToken() {
     if (!refreshToken) throw new Error('NOT_AUTHENTICATED');
 
     const body    = new URLSearchParams({ grant_type: 'refresh_token', refresh_token: refreshToken, client_id: clientId });
-    const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
-    if (clientSecret) headers['Authorization'] = 'Basic ' + btoa(`${clientId}:${clientSecret}`);
+    const headers = buildTokenHeaders(clientId, clientSecret);
 
     const resp = await fetchWithTimeout(XERO_TOKEN_URL, { method: 'POST', headers, body });
     if (!resp.ok) { clearTokens(); throw new Error('NOT_AUTHENTICATED'); }

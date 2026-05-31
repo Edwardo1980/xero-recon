@@ -4,8 +4,8 @@ import { useAuthStore } from './store.js';
 
 // ── Connections / tenant ──────────────────────────────────────
 export async function loadConnections() {
-  const token = await getToken();
   const conns = await withRetry(async () => {
+    const token = await getToken();
     const resp = await fetchWithTimeout(XERO_CONNECTIONS, {
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
     });
@@ -47,7 +47,7 @@ export async function xeroGet(path, retried = false) {
     const raw   = parseInt(resp.headers.get('Retry-After') ?? '10', 10);
     const delay = Math.min(Number.isFinite(raw) && raw > 0 ? raw * 1000 : 10_000, 30_000);
     await new Promise(r => setTimeout(r, delay));
-    resp = await doFetch();
+    resp = await withRetry(doFetch);
   }
 
   if (resp.status === 401 && !retried) {

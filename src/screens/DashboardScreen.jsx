@@ -5,7 +5,7 @@ import { useAuthStore } from '../lib/store.js';
 import { useReconciliation, useForceRefresh } from '../hooks/useReconciliation.js';
 import { useToast } from '../contexts/ToastContext.jsx';
 import { usePageTitle } from '../hooks/usePageTitle.js';
-import { translateError } from '../lib/utils.js';
+import { parseXeroDate, translateError } from '../lib/utils.js';
 import StatGrid from '../components/dashboard/StatGrid.jsx';
 import AccountsTable from '../components/dashboard/AccountsTable.jsx';
 import HelpFaq from '../components/dashboard/HelpFaq.jsx';
@@ -20,8 +20,7 @@ function exportCSV(data) {
   rows.push(['Account', 'Type', 'Contact', 'Reference', 'Date', 'Amount']);
   data.accounts.forEach(acc =>
     (acc.transactions ?? []).forEach(tx => {
-      const d = String(tx.Date ?? '').match(/\/Date\((-?\d+)/);
-      rows.push([acc.name, tx.Type, tx.Contact?.Name ?? '', tx.Reference ?? '', d ? new Date(+d[1]).toLocaleDateString() : '', (tx.Total ?? 0).toFixed(2)]);
+      rows.push([acc.name, tx.Type, tx.Contact?.Name ?? '', tx.Reference ?? '', parseXeroDate(tx.Date), (tx.Total ?? 0).toFixed(2)]);
     })
   );
   rows.push([]);

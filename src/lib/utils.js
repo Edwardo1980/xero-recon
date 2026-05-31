@@ -1,10 +1,16 @@
+const _nfCache = new Map();
+
 export function fmt(n, currency = '') {
   if (currency) {
+    const notation = Math.abs(n) >= 1_000_000 ? 'compact' : 'standard';
+    const key = `${currency}:${notation}`;
     try {
-      return new Intl.NumberFormat(undefined, {
-        style: 'currency', currency, maximumFractionDigits: 2,
-        notation: Math.abs(n) >= 1_000_000 ? 'compact' : 'standard',
-      }).format(n);
+      let nf = _nfCache.get(key);
+      if (!nf) {
+        nf = new Intl.NumberFormat(undefined, { style: 'currency', currency, maximumFractionDigits: 2, notation });
+        _nfCache.set(key, nf);
+      }
+      return nf.format(n);
     } catch {
       // Fall through to simple format if currency code is invalid
     }
