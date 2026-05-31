@@ -11,9 +11,10 @@ export function useReconciliation() {
     queryFn:  fetchReconciliationData,
     staleTime: CACHE_STALE_MS,
     retry(failureCount, error) {
-      if (error.message === 'NOT_AUTHENTICATED') return false;
-      if (error.message.includes('403'))          return false;
-      if (error.message === 'NO_TENANT')          return false;
+      if (error.message === 'NOT_AUTHENTICATED')                return false;
+      if (error.message.includes('403') ||
+          error.message.includes('Permission denied'))         return false;
+      if (error.message === 'NO_TENANT')                       return false;
       // xeroGet already applied Retry-After delay for 429; don't double-retry
       if (error.message.includes('rate limit') || error.message.includes('429')) return false;
       return failureCount < 2;

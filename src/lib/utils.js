@@ -32,9 +32,9 @@ export function translateError(msg) {
   if (msg === 'NOT_AUTHENTICATED') return 'Your session has expired. Please reconnect to Xero.';
   if (msg.includes('State mismatch')) return 'Security check failed. Please start the login process again.';
   if (msg.includes('401') || msg.includes('Unauthorized')) return 'Your Xero session has expired. Please reconnect.';
-  if (msg.includes('403') || msg.includes('Forbidden')) return 'Permission denied. Make sure your Xero app has the required scopes.';
+  if (msg.includes('403') || msg.includes('Forbidden') || msg.includes('Permission denied')) return 'Permission denied. Make sure your Xero app has the required scopes.';
   if (msg.includes('429') || msg.includes('Too Many') || msg.includes('rate limit')) return 'Too many requests — Xero has rate-limited your app. Please wait a minute before refreshing.';
-  if (msg.includes('503') || msg.includes('502') || msg.includes('500')) return 'Xero is experiencing issues right now. Please try again in a few minutes.';
+  if (msg.includes('503') || msg.includes('502') || msg.includes('500') || msg.includes('internal error') || msg.includes('temporarily unavailable')) return 'Xero is experiencing issues right now. Please try again in a few minutes.';
   if (msg.includes('timed out')) return 'The request timed out. Please check your connection and try again.';
   if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) return 'Network error — please check your internet connection and try again.';
   if (msg.includes('Token exchange failed')) return 'Failed to complete the Xero login. Make sure you copied the full redirect URL and try again.';
