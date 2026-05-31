@@ -25,7 +25,7 @@ export async function fetchWithTimeout(url, options = {}, ms = FETCH_TIMEOUT_MS)
   try {
     return await fetch(url, { ...options, signal: ctrl.signal });
   } catch (e) {
-    if (e.name === 'AbortError') throw new Error('Request timed out after 15 seconds.');
+    if (e.name === 'AbortError') throw new Error('Request timed out after 15 seconds.', { cause: e });
     throw e;
   } finally {
     clearTimeout(id);
@@ -85,13 +85,9 @@ export async function exchangeCode(code, returnedState) {
 
   const resp = await fetchWithTimeout(XERO_TOKEN_URL, { method: 'POST', headers, body });
   if (!resp.ok) {
-    let detail = '';
-    try {
-      const j = await resp.clone().json();
-      detail = j.error_description || j.error || '';
-    } catch {
-      detail = await resp.text().catch(() => '');
-    }
+    const raw  = await resp.text().catch(() => '');
+    let detail = raw;
+    try { const j = JSON.parse(raw); detail = j.error_description || j.error || raw; } catch { /* not JSON */ }
     throw new Error(`Token exchange failed (${resp.status})${detail ? `: ${detail}` : ''}`);
   }
   const tokens = await resp.json();

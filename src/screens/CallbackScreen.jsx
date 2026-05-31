@@ -5,10 +5,12 @@ import { useToast } from '../contexts/ToastContext.jsx';
 import { translateError } from '../lib/utils.js';
 import { loadConnections } from '../lib/xero.js';
 import { useAuthStore } from '../lib/store.js';
+import { usePageTitle } from '../hooks/usePageTitle.js';
 import Notice from '../components/ui/Notice.jsx';
 import WizardStepper from '../components/ui/WizardStepper.jsx';
 
 export default function CallbackScreen({ code, state }) {
+  usePageTitle('Connecting…');
   const [url,     setUrl]     = useState('');
   const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(Boolean(code));

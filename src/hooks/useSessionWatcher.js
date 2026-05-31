@@ -1,24 +1,21 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuthStore } from '../lib/store.js';
 
+// Compute minsLeft directly in render (avoids setState-in-effect); a ticker
+// forces re-renders every 30s so the value stays current.
 export function useSessionExpiry() {
-  const expiresAt    = useAuthStore(s => s.expiresAt);
-  const [minsLeft, setMinsLeft] = useState(null);
+  const expiresAt = useAuthStore(s => s.expiresAt);
+  const [, tick]  = useState(0);
 
   useEffect(() => {
-    if (!expiresAt) { setMinsLeft(null); return; }
-
-    const check = () => {
-      const mins = Math.round((expiresAt - Date.now()) / 60_000);
-      setMinsLeft(mins > 0 && mins <= 10 ? mins : null);
-    };
-
-    check();
-    const id = setInterval(check, 30_000);
+    if (!expiresAt) return;
+    const id = setInterval(() => tick(n => n + 1), 30_000);
     return () => clearInterval(id);
   }, [expiresAt]);
 
-  return minsLeft;
+  if (!expiresAt) return null;
+  const mins = Math.round((expiresAt - Date.now()) / 60_000);
+  return mins > 0 && mins <= 10 ? mins : null;
 }
 
 export function useOnlineStatus() {
