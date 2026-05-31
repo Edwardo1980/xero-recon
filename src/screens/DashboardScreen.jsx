@@ -41,8 +41,8 @@ export default function DashboardScreen() {
   const toast         = useToast();
   const forceRefresh  = useForceRefresh();
   const allConnections = useAuthStore(s => s.allConnections);
-  const { tenantId, tenantName, setTenant, clearTokens } = useAuthStore(useShallow(s => ({
-    tenantId: s.tenantId, tenantName: s.tenantName, setTenant: s.setTenant, clearTokens: s.clearTokens,
+  const { tenantName, clearTokens } = useAuthStore(useShallow(s => ({
+    tenantName: s.tenantName, clearTokens: s.clearTokens,
   })));
 
   const { data, isLoading, isError, error, dataUpdatedAt } = useReconciliation();
