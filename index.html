@@ -682,6 +682,68 @@
     .tx-ref, .tx-date { display: none; }
   }
 
+  /* ── Help / FAQ ── */
+  .faq-item { border-bottom: 1px solid var(--border); }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-q {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 0; cursor: pointer; font-size: 12px; color: var(--text);
+    user-select: none; gap: 10px;
+    transition: color 0.15s;
+  }
+  .faq-q:hover { color: var(--accent); }
+  .faq-q .faq-chevron { font-size: 10px; color: var(--text-muted); flex-shrink: 0; transition: transform 0.2s; }
+  .faq-q.open .faq-chevron { transform: rotate(90deg); }
+  .faq-a {
+    font-size: 12px; color: var(--text-dim); line-height: 1.7;
+    padding-bottom: 14px; display: none;
+  }
+  .faq-a a { color: var(--blue); text-decoration: none; }
+  .faq-a a:hover { text-decoration: underline; }
+  .faq-a.open { display: block; }
+
+  /* ── Tx search ── */
+  .tx-search {
+    width: 100%; background: transparent; border: none;
+    border-bottom: 1px solid var(--border);
+    padding: 8px 16px; color: var(--text);
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .tx-search::placeholder { color: var(--text-muted); }
+  .tx-search:focus { border-bottom-color: var(--accent); }
+
+  /* ── Footer ── */
+  .site-footer {
+    margin-top: 48px; padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 8px;
+    font-size: 10px; color: var(--text-muted);
+  }
+  .site-footer a { color: var(--text-muted); text-decoration: none; }
+  .site-footer a:hover { color: var(--text-dim); }
+
+  /* ── Print ── */
+  @media print {
+    body::before, .alert-banner, .toast-container, .status-pill,
+    .btn-row, .org-badge, .kbd-hint, .dash-footer, .card-glow,
+    .table-controls, .sort-th .sort-arrow, .faq-item, .tx-search,
+    .acc-chevron, #helpSection { display: none !important; }
+    body { background: #fff; color: #111; font-size: 11pt; }
+    .wrap { max-width: 100%; padding: 0; }
+    .stat { border: 1px solid #ccc; background: #f9f9f9; }
+    .stat-val { color: #111 !important; }
+    .table-wrap { border: 1px solid #ccc; }
+    .table-head { background: #f0f0f0; color: #555; }
+    .tx-list { display: block !important; }
+    .tx-item, .tx-header { color: #333; }
+    .tag.clear { background: #e8fef5; color: #007a4f; }
+    .tag.pending { background: #fff0ec; color: #c0392b; }
+    .notice { border: 1px solid #ccc; background: #f9f9f9 !important; color: #333 !important; }
+    a[href]::after { content: none; }
+  }
+
   /* ── Reduced motion ── */
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
@@ -832,6 +894,41 @@
       <div class="loader" role="status"><div class="spinner" aria-hidden="true"></div> Loading reconciliation data…</div>
     </div>
 
+    <!-- Help / FAQ -->
+    <div id="helpSection" style="margin-top:8px;">
+      <div class="section-title" style="cursor:pointer;user-select:none;" onclick="toggleHelp()" tabindex="0" role="button" aria-expanded="false" aria-controls="helpContent" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleHelp()}">
+        Help &amp; FAQ <span id="helpChevron" style="font-size:10px;color:var(--text-muted);transition:transform 0.2s;display:inline-block;">▶</span>
+      </div>
+      <div id="helpContent" style="display:none;" role="region" aria-label="Help and FAQ">
+        <div class="card" style="padding:20px 24px;">
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)">What are unreconciled transactions? <span class="faq-chevron">▶</span></div>
+            <div class="faq-a">Unreconciled transactions are bank transactions in Xero that haven't been matched to an invoice, bill, or categorised yet. Until they're reconciled, your books aren't fully up to date.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)">How do I reconcile in Xero? <span class="faq-chevron">▶</span></div>
+            <div class="faq-a">Click <strong>Open in Xero</strong> on any account row to go directly to that account's reconciliation page. Alternatively, in Xero go to <strong>Accounting → Bank Accounts</strong> and click <strong>Reconcile</strong> next to the account. Match each transaction to an existing record or create a new one.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)">The transaction count looks wrong <span class="faq-chevron">▶</span></div>
+            <div class="faq-a">This app only fetches <em>authorised, unreconciled</em> bank transactions. Draft transactions, deleted transactions, and already-reconciled items are excluded by design. Click <strong>↺ Refresh</strong> (or press <kbd style="background:var(--surface3);border:1px solid var(--border2);border-radius:3px;padding:1px 5px;">R</kbd>) to get the latest data from Xero.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)">My session expired — what do I do? <span class="faq-chevron">▶</span></div>
+            <div class="faq-a">Xero access tokens expire after 30 minutes. The app will try to refresh your session automatically. If you see a "session expired" message, click <strong>Disconnect</strong> and then <strong>Open Xero Login</strong> to reconnect. Your Client ID and Secret are saved — you only need to re-authorise.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)">Is my data safe? <span class="faq-chevron">▶</span></div>
+            <div class="faq-a">Yes. This app uses Xero's official OAuth2 PKCE flow — your Xero password is never seen or stored. OAuth tokens are held only in <em>sessionStorage</em> (they're wiped when you close the tab). Your Client ID and Secret are stored in your browser's local storage only, and are never sent anywhere except to Xero's own servers.</div>
+          </div>
+          <div class="faq-item">
+            <div class="faq-q" onclick="toggleFaq(this)">Can I use this with multiple Xero organisations? <span class="faq-chevron">▶</span></div>
+            <div class="faq-a">Yes. If your Xero account has access to multiple organisations, you'll be prompted to choose one after connecting. You can switch organisations at any time using the organisation badge in the footer.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="dash-footer">
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <span class="last-sync" id="lastSync" aria-live="polite">—</span>
@@ -846,6 +943,14 @@
     </div>
   </div>
 
+  <footer class="site-footer" aria-label="Site footer">
+    <span>Xero Reconciliation Assistant · v1.3.0</span>
+    <span>
+      <a href="https://developer.xero.com/documentation/api/accounting/overview" target="_blank" rel="noopener noreferrer">Xero API Docs</a>
+      &nbsp;·&nbsp;
+      <a href="https://developer.xero.com/app/manage" target="_blank" rel="noopener noreferrer">Developer Portal</a>
+    </span>
+  </footer>
 </div>
 
 <!-- Toast container -->
@@ -911,6 +1016,88 @@ function esc(s) {
 
 function errBox(msg) {
   return `<div class="notice warn" role="alert"><span aria-hidden="true">⚠</span><div>${esc(msg)}</div></div>`;
+}
+
+// ── Retry with exponential backoff ────────────────────────────
+async function withRetry(fn, maxAttempts = 3) {
+  let lastErr;
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      return await fn();
+    } catch (e) {
+      lastErr = e;
+      const permanent = e.message.includes('401') || e.message.includes('403') ||
+                        e.message.includes('State mismatch') || e.name === 'AbortError' ||
+                        e.message.includes('NOT_AUTHENTICATED');
+      if (permanent || i === maxAttempts - 1) throw e;
+      await new Promise(r => setTimeout(r, (i + 1) * 1500));
+    }
+  }
+  throw lastErr;
+}
+
+// ── Stat counter animation ─────────────────────────────────────
+function animateStats() {
+  document.querySelectorAll('.stat-val[data-to]').forEach(el => {
+    const to  = parseFloat(el.dataset.to);
+    if (isNaN(to)) return;
+    const fmt = el.dataset.fmt || 'int';
+    const dur = 550;
+    let start = null;
+    const step = ts => {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / dur, 1);
+      const v = to * (1 - Math.pow(1 - p, 3)); // ease-out cubic
+      el.textContent = fmt === 'int' ? Math.round(v) : el.dataset.display;
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = el.dataset.display;
+    };
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      el.textContent = el.dataset.display;
+    } else {
+      requestAnimationFrame(step);
+    }
+  });
+}
+
+// ── Transaction list search ────────────────────────────────────
+function filterTxList(accId, term) {
+  const list = document.getElementById(`tx-${accId}`);
+  if (!list) return;
+  const q = term.toLowerCase();
+  let visible = 0;
+  list.querySelectorAll('.tx-item').forEach(row => {
+    const match = !q || row.textContent.toLowerCase().includes(q);
+    row.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  const noMatch = list.querySelector('.tx-no-match');
+  if (!q || visible > 0) {
+    if (noMatch) noMatch.remove();
+  } else if (!noMatch) {
+    const msg = document.createElement('div');
+    msg.className = 'tx-more tx-no-match';
+    msg.textContent = `No transactions matching "${term}"`;
+    list.appendChild(msg);
+  }
+}
+
+// ── Help / FAQ toggle ─────────────────────────────────────────
+function toggleHelp() {
+  const content = $('helpContent');
+  const chevron = $('helpChevron');
+  const btn     = content.previousElementSibling;
+  const open    = content.style.display === 'none' || content.style.display === '';
+  content.style.display = open ? 'block' : 'none';
+  chevron.style.transform = open ? 'rotate(90deg)' : '';
+  btn.setAttribute('aria-expanded', open);
+}
+
+function toggleFaq(qEl) {
+  const aEl = qEl.nextElementSibling;
+  const open = !aEl.classList.contains('open');
+  qEl.classList.toggle('open', open);
+  aEl.classList.toggle('open', open);
 }
 
 function fmt(n, currency='') {
@@ -1179,13 +1366,15 @@ function showOrgPicker(conns) {
 async function xeroGet(path, retried = false) {
   const token    = await getToken();
   const tenantId = await getTenantId();
-  const resp = await fetchWithTimeout(`${XERO_API_BASE}${path}`, {
-    headers: {
-      Authorization:    `Bearer ${token}`,
-      'Xero-tenant-id': tenantId,
-      Accept:           'application/json'
-    }
-  });
+  const resp = await withRetry(() =>
+    fetchWithTimeout(`${XERO_API_BASE}${path}`, {
+      headers: {
+        Authorization:    `Bearer ${token}`,
+        'Xero-tenant-id': tenantId,
+        Accept:           'application/json'
+      }
+    })
+  );
 
   if (resp.status === 401 && !retried) {
     // Token may have been rejected server-side; force refresh and retry once
@@ -1420,20 +1609,22 @@ function renderDashboard(data) {
   const displayAccounts = sortAndFilter(data.accounts);
   const pendingCount   = data.accounts.filter(a => a.count > 0).length;
 
+  const fmtVal = fmt(data.totalValue, data.currency);
+
   // ── Stats ──
   const statsHTML = `
     <div class="section-title">Overview — ${esc(data.tenantName)}</div>
     <div class="stats-row" role="list" aria-label="Summary statistics">
       <div class="stat ${allClear ? 'green' : 'warn'}" role="listitem">
-        <div class="stat-val">${data.totalUnreconciled}</div>
+        <div class="stat-val" data-to="${data.totalUnreconciled}" data-display="${data.totalUnreconciled}" data-fmt="int">0</div>
         <div class="stat-lbl">Unreconciled txns</div>
       </div>
       <div class="stat blue" role="listitem">
-        <div class="stat-val" style="font-size:20px;">${fmt(data.totalValue, data.currency)}</div>
+        <div class="stat-val" style="font-size:20px;" data-to="1" data-display="${esc(fmtVal)}" data-fmt="text">${esc(fmtVal)}</div>
         <div class="stat-lbl">Outstanding value</div>
       </div>
       <div class="stat ${pendingCount > 0 ? 'warn' : 'green'}" role="listitem">
-        <div class="stat-val">${pendingCount}</div>
+        <div class="stat-val" data-to="${pendingCount}" data-display="${pendingCount}" data-fmt="int">0</div>
         <div class="stat-lbl">Accounts pending</div>
       </div>
     </div>
@@ -1464,10 +1655,10 @@ function renderDashboard(data) {
   // ── Transaction list for an account ──
   function txListHTML(acc) {
     if (!acc.transactions || !acc.transactions.length) return '';
-    const isOpen = _expandedAccounts.has(acc.id);
-    const MAX_SHOW = 25;
-    const shown = acc.transactions.slice(0, MAX_SHOW);
-    const txRows = shown.map(tx => {
+    const isOpen  = _expandedAccounts.has(acc.id);
+    const MAX_SHOW = 30;
+    const shown    = acc.transactions.slice(0, MAX_SHOW);
+    const txRows   = shown.map(tx => {
       const isIn = tx.Type === 'RECEIVE' || tx.Type === 'RECEIVECREDIT';
       return `
         <div class="tx-item">
@@ -1482,11 +1673,23 @@ function renderDashboard(data) {
     }).join('');
 
     const moreRow = acc.count > MAX_SHOW
-      ? `<div class="tx-more">Showing ${MAX_SHOW} of ${acc.count} transactions — open Xero to see all</div>`
+      ? `<div class="tx-more">Showing ${MAX_SHOW} of ${acc.count} — <a href="https://go.xero.com/Bank/Reconcile.aspx?accountID=${esc(acc.id)}" target="_blank" rel="noopener noreferrer" style="color:var(--blue);">open Xero to see all</a></div>`
       : '';
+
+    const xeroUrl = `https://go.xero.com/Bank/Reconcile.aspx?accountID=${esc(acc.id)}`;
 
     return `
       <div id="tx-${acc.id}" class="tx-list" style="display:${isOpen ? 'block' : 'none'};">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--border);">
+          <input class="tx-search" type="search" placeholder="Search these transactions…"
+            aria-label="Search transactions for ${esc(acc.name)}"
+            oninput="filterTxList('${esc(acc.id)}',this.value)" style="flex:1;">
+          <a href="${xeroUrl}" target="_blank" rel="noopener noreferrer"
+            class="btn btn-secondary" style="padding:6px 12px;font-size:10px;white-space:nowrap;width:auto;"
+            aria-label="Open ${esc(acc.name)} in Xero to reconcile">
+            Open in Xero →
+          </a>
+        </div>
         <div class="tx-header">
           <div></div><div>Contact</div><div>Reference</div><div>Date</div><div style="text-align:right;">Amount</div>
         </div>
@@ -1597,6 +1800,7 @@ function renderDashboard(data) {
 
   $('dashContent').setAttribute('aria-busy', 'false');
   $('dashContent').innerHTML = statsHTML + tableHTML + tipHTML;
+  animateStats();
 
   // Org badge
   const conns = store.get('allConnections') || [];
@@ -1869,6 +2073,31 @@ document.addEventListener('visibilitychange', () => {
   const dash = $('screen-dashboard');
   if (!dash.classList.contains('active')) return;
   if (!cacheIsValid()) loadDashboard(true);
+});
+
+// ── Global error boundary ─────────────────────────────────────
+window.addEventListener('error', e => {
+  if (e.message && e.message.includes('ResizeObserver')) return; // harmless browser noise
+  console.error('Uncaught error:', e.error || e.message);
+  const wrap = document.querySelector('.wrap');
+  if (wrap) {
+    wrap.innerHTML = `
+      <div class="card" style="text-align:center;padding:48px 28px;max-width:500px;margin:60px auto;">
+        <div style="font-size:36px;margin-bottom:16px;">⚠</div>
+        <h2 style="color:var(--warn);font-family:'Clash Display',sans-serif;margin-bottom:10px;">Something went wrong</h2>
+        <p style="color:var(--text-dim);margin-bottom:6px;">An unexpected error occurred. This is usually a temporary issue.</p>
+        <p style="color:var(--text-muted);font-size:10px;margin-bottom:24px;">${esc(e.message || 'Unknown error')}</p>
+        <button class="btn btn-primary" onclick="location.reload()" style="max-width:200px;margin:0 auto;">
+          Reload page
+        </button>
+      </div>`;
+  }
+});
+
+window.addEventListener('unhandledrejection', e => {
+  // Only surface truly unexpected rejections — our own async flows are handled
+  if (e.reason?.message === 'NOT_AUTHENTICATED') return;
+  console.error('Unhandled rejection:', e.reason);
 });
 
 // ── Boot ──────────────────────────────────────────────────────
