@@ -55,6 +55,7 @@ export default function SetupScreen() {
               Set <strong>Integration type</strong> to <strong>Web app</strong>. For <strong>Redirect URI</strong>, enter exactly:
               <code id="redirectUriDisplay">{REDIRECT_URI}</code>
               <button
+                type="button"
                 className="btn btn-ghost"
                 onClick={copyUri}
                 style={{ marginTop: 8, fontSize: 10, padding: '5px 10px' }}
@@ -102,7 +103,7 @@ export default function SetupScreen() {
         </div>
 
         {error && <Notice id="setup-error" type="warn">{error}</Notice>}
-        <button className="btn btn-primary" onClick={onSave}>Save &amp; Connect to Xero →</button>
+        <button type="button" className="btn btn-primary" onClick={onSave}>Save &amp; Connect to Xero →</button>
       </div>
     </div>
   );

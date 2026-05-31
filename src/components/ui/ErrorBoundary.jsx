@@ -24,6 +24,7 @@ export default class ErrorBoundary extends Component {
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <button
+              type="button"
               className="btn btn-primary"
               style={{ width: 'auto', padding: '10px 24px' }}
               onClick={() => this.setState({ error: null })}
@@ -31,6 +32,7 @@ export default class ErrorBoundary extends Component {
               Try again
             </button>
             <button
+              type="button"
               className="btn btn-secondary"
               style={{ width: 'auto', padding: '10px 24px' }}
               onClick={() => window.location.reload()}

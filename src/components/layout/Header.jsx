@@ -23,6 +23,7 @@ export default function Header() {
         <span>{accessToken ? (tenantName ?? 'Connected') : 'Not connected'}</span>
       </div>
       <button
+        type="button"
         className="theme-toggle"
         onClick={toggle}
         aria-label={light ? 'Switch to dark mode' : 'Switch to light mode'}

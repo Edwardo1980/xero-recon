@@ -47,7 +47,7 @@ export default function OrgPickerScreen() {
           ))}
         </div>
 
-        <button className="btn btn-primary" onClick={onSelect} disabled={!selected}>
+        <button type="button" className="btn btn-primary" onClick={onSelect} disabled={!selected}>
           Continue →
         </button>
       </div>

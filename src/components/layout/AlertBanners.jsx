@@ -36,6 +36,7 @@ export default function AlertBanners() {
           <span aria-hidden="true">⏱</span>
           <span>Your Xero session expires in {minsLeft} minute{minsLeft !== 1 ? 's' : ''} —</span>
           <button
+            type="button"
             onClick={() => doRefreshToken().then(() => toast('Session refreshed', 'success')).catch(() => {})}
             className="btn btn-ghost"
             style={{ padding: '4px 10px', fontSize: 10, marginLeft: 4 }}
@@ -49,6 +50,7 @@ export default function AlertBanners() {
           <span aria-hidden="true">🆕</span>
           <span>A new version is available —</span>
           <button
+            type="button"
             onClick={applyUpdate}
             className="btn btn-ghost"
             style={{ padding: '4px 10px', fontSize: 10, marginLeft: 4 }}

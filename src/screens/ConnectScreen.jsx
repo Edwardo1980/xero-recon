@@ -37,14 +37,14 @@ export default function ConnectScreen() {
           Your credentials are saved. OAuth2 PKCE is used — your Xero password is <strong>never</strong> stored or transmitted through this app.
         </Notice>
 
-        <button className={`btn btn-primary${loading ? ' btn-loading' : ''}`} onClick={onOpen} disabled={loading} style={{ marginBottom: 10 }}>
+        <button type="button" className={`btn btn-primary${loading ? ' btn-loading' : ''}`} onClick={onOpen} disabled={loading} style={{ marginBottom: 10 }}>
           {loading ? 'Opening Xero…' : 'Open Xero Login →'}
         </button>
-        <button className="btn btn-secondary" style={{ width: '100%' }} onClick={() => navigate('/callback')}>
+        <button type="button" className="btn btn-secondary" style={{ width: '100%' }} onClick={() => navigate('/callback')}>
           I've authorised — enter callback URL
         </button>
         <div style={{ marginTop: 12 }}>
-          <button className="btn btn-ghost" onClick={onReset}>Change credentials</button>
+          <button type="button" className="btn btn-ghost" onClick={onReset}>Change credentials</button>
         </div>
       </div>
     </div>

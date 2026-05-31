@@ -56,6 +56,7 @@ export default function AccountsTable({ accounts, currency }) {
       {/* Filter controls */}
       <div className="table-controls">
         <button
+          type="button"
           className={`filter-pill${filterPending ? ' active' : ''}`}
           onClick={() => setFilterPending(f => !f)}
           aria-pressed={filterPending}
@@ -81,7 +82,7 @@ export default function AccountsTable({ accounts, currency }) {
           <div style={{ padding: '28px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
             {filterPending
               ? <>All accounts reconciled — nothing pending.{' '}
-                  <button className="filter-pill" style={{ display: 'inline-flex', marginTop: 8 }} onClick={() => setFilterPending(false)}>Show all</button>
+                  <button type="button" className="filter-pill" style={{ display: 'inline-flex', marginTop: 8 }} onClick={() => setFilterPending(false)}>Show all</button>
                 </>
               : 'No bank accounts found. Make sure your Xero organisation has active bank accounts.'}
           </div>

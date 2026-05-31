@@ -84,7 +84,7 @@ export default function CallbackScreen({ code, state }) {
               <input id="inputCallbackUrl" type="text" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && onManual()} placeholder="https://yoursite.com/callback?code=…&state=…" autoComplete="off" spellCheck={false} />
             </div>
             {error && <Notice type="warn">{error}</Notice>}
-            <button className="btn btn-primary" onClick={onManual}>Complete Connection →</button>
+            <button type="button" className="btn btn-primary" onClick={onManual}>Complete Connection →</button>
           </>
         )}
       </div>

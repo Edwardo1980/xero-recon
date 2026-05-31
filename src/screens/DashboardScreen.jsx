@@ -114,7 +114,7 @@ export default function DashboardScreen() {
           <>
             <Notice type="warn">{translateError(error?.message)}</Notice>
             <div style={{ marginTop: 12 }}>
-              <button className="btn btn-secondary" onClick={() => forceRefresh()} style={{ width: 'auto', padding: '10px 20px' }}>
+              <button type="button" className="btn btn-secondary" onClick={() => forceRefresh()} style={{ width: 'auto', padding: '10px 20px' }}>
                 Try again
               </button>
             </div>
@@ -144,6 +144,7 @@ export default function DashboardScreen() {
           <span className="last-sync" aria-live="polite">{lastUpdated}</span>
           {allConnections.length > 1 && (
             <button
+              type="button"
               className="org-badge"
               onClick={() => navigate('/org-select')}
               aria-label={`Current org: ${tenantName ?? ''}. Click to switch.`}
@@ -157,6 +158,7 @@ export default function DashboardScreen() {
         </div>
         <div className="btn-row">
           <button
+            type="button"
             className={`btn btn-secondary${isLoading ? ' btn-loading' : ''}`}
             style={{ padding: '8px 14px', fontSize: 11 }}
             onClick={() => { forceRefresh(); toast('Refreshing…', 'info', 1500); }}
@@ -166,6 +168,7 @@ export default function DashboardScreen() {
             {isLoading ? 'Refreshing…' : '↺ Refresh'}
           </button>
           <button
+            type="button"
             className="btn btn-ghost"
             style={{ fontSize: 11, padding: '8px 14px' }}
             onClick={() => { if (data) { exportCSV(data); toast('CSV exported', 'success'); } else toast('No data to export yet — refresh first.', 'info'); }}
@@ -174,6 +177,7 @@ export default function DashboardScreen() {
             Export CSV
           </button>
           <button
+            type="button"
             className="btn btn-ghost"
             style={{ color: disconnectConfirm ? 'var(--warn)' : undefined, borderColor: disconnectConfirm ? 'rgba(255,112,67,0.4)' : undefined }}
             onClick={onDisconnect}
